@@ -15,6 +15,7 @@ const connectToDB = async () => {
 }
 const userRouter = require('./routes/userRouter');
 const taskRouter = require('./routes/taskRouter');
+app.use(express.urlencoded({ extended: false}))
 app.use('/api/users', userRouter);
 app.use('/api/tasks', taskRouter);
 connectToDB();
