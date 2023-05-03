@@ -1,17 +1,23 @@
 const User = require('./../../models/User');
 const bcrypt = require('bcrypt');
+const { validateUsername, validatePassword } = require('./../../functions/validation');
 const addUser = async (req, res) => {
     const saltRounds = 10;
     const username = req.body.username;
     const password = req.body.password;
-    const regexPassword =/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-    const validatedPassword = regexPassword.test(password);
+    const validatedUsername = validateUsername(username);
+    const validatedPassword = validatePassword(password);
     let findUser = null;
     if(
         (typeof username === 'string') === false
         || (typeof password === 'string') === false
     ){
         return res.json({message: 'invalid inputs'});
+    }
+    if(
+        validatedUsername === false
+    ){
+        return res.json({message: 'invalid username. underscores, letters and numbers only'});
     }
     if(
         validatedPassword === false

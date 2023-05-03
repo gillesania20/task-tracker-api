@@ -1,12 +1,14 @@
 const User = require('./../../models/User');
 const bcrypt = require('bcrypt');
+const { validateId, validateUsername, validatePassword } = require('./../../functions/validation');
 const updateUser = async (req, res) => {
     const saltRounds = 10;
     const id = req.params.id;
     const username = req.body.username;
     const password = req.body.password;
-    const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-    const validatePassword = regexPassword.test(password);
+    const validatedId = validateId(id);
+    const validatedUsername = validateUsername(username);
+    const validatedPassword = validatePassword(password);
     let user = null;
     if(
         (typeof id === 'string') === false
@@ -16,6 +18,16 @@ const updateUser = async (req, res) => {
         return res.json({message: 'invalid inputs'});
     }
     if(
+        validatedId === false
+    ){
+        return res.json({message: 'invalid id'});
+    }
+    if(
+        validatedUsername === false
+    ){
+        return res.json({message: 'invalid username'});
+    }
+    if(
         password.length <= 0
     ){
         user = await User.findOne({_id: id}, 'username').exec();
@@ -23,7 +35,7 @@ const updateUser = async (req, res) => {
         await user.save();
     }else{
         if(
-            validatePassword === false
+            validatedPassword === false
         ){
             return res.json({message: 'invalid password'});
         }

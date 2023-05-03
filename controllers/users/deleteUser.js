@@ -1,8 +1,8 @@
 const User = require('./../../models/User');
+const { validateId } = require('./../../functions/validation');
 const deleteUser = async (req, res) => {
     const id = req.params.id;
-    const regexId = (/^[a-zA-Z0-9]*$/);
-    const validateId = regexId.test(id);
+    const validateId = validateId(id);
     let findUser = null;
     if(
         (typeof id === 'string') === false
