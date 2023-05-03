@@ -3,9 +3,9 @@ const getUsers = async (req, res) => {
     let findUsers = [];
     findUsers = await User.find({}, 'username role active');
     if(
-        findUsers === []
+        findUsers.length === 0
     ){
-        res.json({message: 'no users yet'});
+        return res.json({message: 'no users yet'});
     }
     return res.json(findUsers)
 }

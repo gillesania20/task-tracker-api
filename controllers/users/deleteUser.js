@@ -2,10 +2,10 @@ const User = require('./../../models/User');
 const { validateId } = require('./../../functions/validation');
 const deleteUser = async (req, res) => {
     const id = req.params.id;
-    const validateId = validateId(id);
+    const validatedId = validateId(id);
     let findUser = null;
     if(
-        validateId === false
+        validatedId === false
     ){
         return res.json({message: 'invalid id'});
     }
