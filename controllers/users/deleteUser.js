@@ -5,8 +5,7 @@ const deleteUser = async (req, res) => {
     const validateId = validateId(id);
     let findUser = null;
     if(
-        (typeof id === 'string') === false
-        || validateId === false
+        validateId === false
     ){
         return res.json({message: 'invalid id'});
     }

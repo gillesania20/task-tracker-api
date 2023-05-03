@@ -11,13 +11,6 @@ const updateUser = async (req, res) => {
     const validatedPassword = validatePassword(password);
     let user = null;
     if(
-        (typeof id === 'string') === false
-        || (typeof username === 'string') === false
-        || (typeof password === 'string') === false
-    ){
-        return res.json({message: 'invalid inputs'});
-    }
-    if(
         validatedId === false
     ){
         return res.json({message: 'invalid id'});

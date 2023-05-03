@@ -9,12 +9,6 @@ const addUser = async (req, res) => {
     const validatedPassword = validatePassword(password);
     let findUser = null;
     if(
-        (typeof username === 'string') === false
-        || (typeof password === 'string') === false
-    ){
-        return res.json({message: 'invalid inputs'});
-    }
-    if(
         validatedUsername === false
     ){
         return res.json({message: 'invalid username. underscores, letters and numbers only'});
