@@ -3,7 +3,7 @@ const validateId = (id) => {
     const validatedId = regexId.test(id);
     if(
         typeof id !== 'string'
-        && id.length <= 0
+        || id.length <= 0
     ){
         return false;
     }
@@ -15,7 +15,7 @@ const validateUsername = (username) => {
     const validatedUsername = regexUsername.test(username);
     if(
         typeof username !=='string'
-        && username.length <= 0
+        || username.length <= 0
     ){
         return false;
     }
@@ -27,8 +27,10 @@ const validatePassword = (password) => {
     const validatedPassword = regexPassword.test(password);
     if(
         typeof password !== 'string'
-        && password.length <= 0
-    )
+        || password.length <= 0
+    ){
+        return false;
+    }
     return validatedPassword;
 }
 
