@@ -11,6 +11,4 @@ app.use(express.json());
 app.use('/api/users', userRouter);
 app.use('/api/tasks', taskRouter);
 app.use('/api/auth', authRouter);
-connectToDB().then(
-    () => app.listen(PORT, () => console.log('listening to port '+PORT))
-);
+connectToDB(app, PORT);
