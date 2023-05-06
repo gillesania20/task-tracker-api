@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('./../../models/User');
+const { ACCESS_TOKEN_EXPIRES_IN } = require('./../../constants');
 const refresh = (req, res) => {
     const refreshToken = req.cookies.jwt;
     if(
@@ -28,7 +29,7 @@ const refresh = (req, res) => {
             },
             process.env.ACCESS_TOKEN,
             {
-                expiresIn: '15s'
+                expiresIn: ACCESS_TOKEN_EXPIRES_IN
             }
         );
         return res.json({accessToken});

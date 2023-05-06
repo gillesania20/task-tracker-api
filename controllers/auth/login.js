@@ -2,6 +2,14 @@ const User = require('./../../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { validateUsername, validatePassword } = require('./../../functions/validation');
+const {
+    ACCESS_TOKEN_EXPIRES_IN,
+    REFRESH_TOKEN_EXPIRES_IN,
+    COOKIE_MAX_AGE,
+    COOKIE_HTTP_ONLY,
+    COOKIE_SAME_SITE,
+    COOKIE_SECURE
+} = require('./../../constants');
 const login = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -44,7 +52,7 @@ const login = async (req, res) => {
             },
             process.env.ACCESS_TOKEN,
             {
-                expiresIn: '15s'
+                expiresIn: ACCESS_TOKEN_EXPIRES_IN
             }
         );
         refreshToken = jwt.sign(
@@ -53,17 +61,17 @@ const login = async (req, res) => {
             },
             process.env.REFRESH_TOKEN,
             {
-                expiresIn: '1d'
+                expiresIn: REFRESH_TOKEN_EXPIRES_IN
             }
         );
         res.cookie(
             'jwt',
             refreshToken,
             {
-                maxAge: 1000 * 60 * 60 * 24,
-                httpOnly: true,
-                //sameSite: 'none',
-                //secure: false
+                maxAge: COOKIE_MAX_AGE,
+                httpOnly: COOKIE_HTTP_ONLY,
+                sameSite: COOKIE_SAME_SITE,
+                secure: COOKIE_SECURE
             }
         )
         return res.json({accessToken});

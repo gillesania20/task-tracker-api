@@ -6,9 +6,12 @@ const addUser = require('./../controllers/users/addUser');
 const updateUser = require('./../controllers/users/updateUser');
 const deleteUser = require('./../controllers/users/deleteUser');
 const authorizeUser = require('./../middlewares/authorizeUser');
+const authorizeAdmin = require('./../middlewares/authorizeAdmin');
 router.route('/')
-    .get(getUsers)
     .post(addUser);
+router.route('/')
+    .all(authorizeAdmin)
+    .get(getUsers);
 router.route('/:id')
     .all(authorizeUser)
     .get(getUser)
