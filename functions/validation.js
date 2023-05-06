@@ -34,8 +34,21 @@ const validatePassword = (password) => {
     return validatedPassword;
 }
 
+const validateBearerToken = (bearerToken) => {
+    const regexBearerToken = (/^Bearer\s([a-zA-Z0-9\.]+)$/);
+    const validatedBearerToken = regexBearerToken.test(bearerToken);
+    if(
+        typeof bearerToken !== 'string'
+        || bearerToken.length <= 0
+    ){
+        return false;
+    }
+    return validatedBearerToken;
+}
+
 module.exports = {
     validateId,
     validateUsername,
-    validatePassword
+    validatePassword,
+    validateBearerToken
 }
