@@ -35,7 +35,7 @@ const validatePassword = (password) => {
 }
 
 const validateBearerToken = (bearerToken) => {
-    const regexBearerToken = (/^Bearer\s([a-zA-Z0-9\.]+)$/);
+    const regexBearerToken = (/^Bearer\s[\S]+$/);
     const validatedBearerToken = regexBearerToken.test(bearerToken);
     if(
         typeof bearerToken !== 'string'
@@ -46,9 +46,37 @@ const validateBearerToken = (bearerToken) => {
     return validatedBearerToken;
 }
 
+const validateTaskTitle = (title) => {
+    const regexTitle = (/^[a-zA-Z0-9]+([ ][a-zA-Z0-9]+)*$/);
+    const validatedRegexTitle = regexTitle.test(title);
+    if(
+        typeof title !== 'string'
+        || title.length <= 0
+        || title.length > 20
+    ){
+        return false;
+    }
+    return validatedRegexTitle;
+}
+
+const validateTaskBody = (body) => {
+    const regexBody = (/^[\S]+([ ][\S]+)*$/);
+    const validatedRegexBody = regexBody.test(body);
+    if(
+        typeof body !== 'string'
+        || body.length <= 0
+        || body.length > 255
+    ){
+        return false;
+    }
+    return validatedRegexBody;
+}
+
 module.exports = {
     validateId,
     validateUsername,
     validatePassword,
-    validateBearerToken
+    validateBearerToken,
+    validateTaskTitle,
+    validateTaskBody
 }

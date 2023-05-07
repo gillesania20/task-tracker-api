@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('./User');
 const TaskSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -22,8 +23,8 @@ const TaskSchema = new mongoose.Schema({
     }
 }, {
     timestamps: {
-        createdAt,
-        updatedAt
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
     }
 });
 const Task = mongoose.model('Task', TaskSchema);
