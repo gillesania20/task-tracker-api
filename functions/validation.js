@@ -1,9 +1,16 @@
+const mongoose = require('mongoose');
 const validateId = (id) => {
     const regexId = (/^[a-zA-Z0-9]*$/);
     const validatedId = regexId.test(id);
+    const validateObjectId = mongoose.isValidObjectId(id);
     if(
         typeof id !== 'string'
         || id.length <= 0
+    ){
+        return false;
+    }
+    if(
+        validateObjectId === false
     ){
         return false;
     }
