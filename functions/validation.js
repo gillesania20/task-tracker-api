@@ -72,11 +72,21 @@ const validateTaskBody = (body) => {
     return validatedRegexBody;
 }
 
+const validateTaskCompleted = (completed) => {
+    if(
+        typeof completed !== 'boolean'
+    ){
+        return false;
+    }
+    return true;
+}
+
 module.exports = {
     validateId,
     validateUsername,
     validatePassword,
     validateBearerToken,
     validateTaskTitle,
-    validateTaskBody
+    validateTaskBody,
+    validateTaskCompleted
 }
