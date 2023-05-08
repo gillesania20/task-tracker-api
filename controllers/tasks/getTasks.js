@@ -11,12 +11,12 @@ const getTasks = (req, res) => {
     if(
         validatedBearerToken === false
     ){
-        return res.json({message: 'invalid bearer token'});
+        return res.status(400).json({message: 'invalid bearer token'});
     }
     accessToken = bearerToken.split(' ')[1];
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
         if(err){
-            return res.json({message: 'access token verification failed'});
+            return res.status(400).json({message: 'access token verification failed'});
         }
         if(
             decoded.role === 'Admin'
@@ -26,9 +26,9 @@ const getTasks = (req, res) => {
             if(
                 findTasks.length <= 0
             ){
-                return res.json({message: 'no tasks yet'});
+                return res.status(200).json({message: 'no tasks yet'});
             }else{
-                return res.json(findTasks);
+                return res.status(200).json(findTasks);
             }
         }else if(
             decoded.role === 'User'
@@ -37,18 +37,18 @@ const getTasks = (req, res) => {
             if(
                 findUser === null
             ){
-                return res.json({message: 'user not found'});
+                return res.status(404).json({message: 'user not found'});
             }
             findTasks = await Task.find({user: findUser._id}, '_id user title body completed completedAt')
                 .populate('user', 'username').lean().exec();
             if(
                 findTasks.length <= 0
             ){
-                return res.json({message: 'no tasks yet'});
+                return res.status(200).json({message: 'no tasks yet'});
             }
-            return res.json(findTasks);
+            return res.status(200).json(findTasks);
         }else{
-            return res.json({message: 'invalid access token'});
+            return res.status(403).json({message: 'unauthorized'});
         }
     });
 }

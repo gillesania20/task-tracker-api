@@ -13,12 +13,12 @@ const updateUser = async (req, res) => {
     if(
         validatedId === false
     ){
-        return res.json({message: 'invalid id'});
+        return res.status(400).json({message: 'invalid id'});
     }
     if(
         validatedUsername === false
     ){
-        return res.json({message: 'invalid username'});
+        return res.status(400).json({message: 'invalid username'});
     }
     if(
         password.length <= 0
@@ -30,7 +30,7 @@ const updateUser = async (req, res) => {
         if(
             validatedPassword === false
         ){
-            return res.json({message: 'invalid password'});
+            return res.status(400).json({message: 'invalid password'});
         }
         bcrypt.hash(password, saltRounds, async function (err, hash) {
             user = await User.findOne({_id: id}, 'username password').exec();
@@ -39,6 +39,6 @@ const updateUser = async (req, res) => {
             await user.save();
         });
     }
-    return res.json({message: 'updated user'});
+    return res.status(200).json({message: 'updated user'});
 }
 module.exports = updateUser;

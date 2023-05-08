@@ -21,29 +21,29 @@ const login = async (req, res) => {
     if(
         validatedUsername === false
     ){
-        return res.json({message: 'invalid username'});
+        return res.status(400).json({message: 'invalid username'});
     }
     if(
         validatedPassword === false
     ){
-        return res.json({message: 'invalid password'});
+        return res.status(400).json({message: 'invalid password'});
     }
     findUser = await User.findOne({username}, 'username password role').lean().exec();
     if(
         findUser === null
     ){
-        return res.json({message: 'invalid username or password'});
+        return res.status(400).json({message: 'invalid username or password'});
     }
     bcrypt.compare(password, findUser.password, function(err, result) {
         if(
             err
         ){
-            return res.json({message: 'login error'});
+            return res.status(400).json({message: 'login error'});
         }
         if(
             result === false
         ){
-            return res.json({message: 'invalid username or password'});
+            return res.status(400).json({message: 'invalid username or password'});
         }
         accessToken = jwt.sign(
             {
@@ -74,7 +74,7 @@ const login = async (req, res) => {
                 secure: COOKIE_SECURE
             }
         )
-        return res.json({accessToken});
+        return res.status(200).json({accessToken});
     });
 }
 module.exports = login;

@@ -13,24 +13,24 @@ const deleteTask = (req, res) => {
     if(
         validatedBearerToken === false
     ){
-        return res.json({message: 'invalid bearer token'});
+        return res.status(400).json({message: 'invalid bearer token'});
     }
     if(
         validatedId === false
     ){
-        return res.json({message: 'invalid task id'});
+        return res.status(400).json({message: 'invalid task id'});
     }
     accessToken = bearerToken.split(' ')[1];
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
         if(err){
-            return res.json({message: 'access token verification failed'});
+            return res.status(400).json({message: 'access token verification failed'});
         }
         findUser = await User.findOne({username: decoded.username}, '_id')
             .lean().exec();
         if(
             findUser === null
         ){
-            return res.json({message: 'user not found'});
+            return res.status(404).json({message: 'user not found'});
         }
         if(
             decoded.role === 'Admin'
@@ -40,10 +40,10 @@ const deleteTask = (req, res) => {
             if(
                 findTask === null
             ){
-                return res.json({message: 'task not found'});
+                return res.status(404).json({message: 'task not found'});
             }
             await Task.deleteOne({_id: findTask._id});
-            return res.json({message: 'task deleted'});
+            return res.status(200).json({message: 'task deleted'});
         }else if(
             decoded.role === 'User'
         ){
@@ -52,12 +52,12 @@ const deleteTask = (req, res) => {
             if(
                 findTask === null
             ){
-                return res.json({message: 'task not found'});
+                return res.status(404).json({message: 'task not found'});
             }
             await Task.deleteOne({_id: findTask._id});
-            return res.json({message: 'task deleted'});
+            return res.status(200).json({message: 'task deleted'});
         }else{
-            return res.json({message: 'unauthorized'});
+            return res.status(403).json({message: 'unauthorized'});
         }
     });
 }

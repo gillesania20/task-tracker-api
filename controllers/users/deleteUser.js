@@ -7,15 +7,15 @@ const deleteUser = async (req, res) => {
     if(
         validatedId === false
     ){
-        return res.json({message: 'invalid id'});
+        return res.status(400).json({message: 'invalid id'});
     }
     findUser = await User.findOne({_id: id}, '_id').lean().exec();
     if(
         findUser === null
     ){
-        return res.json({message: 'user not found'});
+        return res.status(404).json({message: 'user not found'});
     }
     await User.deleteOne({_id: id});
-    return res.json({message: 'user deleted'});
+    return res.status(200).json({message: 'user deleted'});
 }
 module.exports = deleteUser;

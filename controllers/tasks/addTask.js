@@ -20,28 +20,28 @@ const addTask = async (req, res) => {
     if(
         validatedBearerToken === false
     ){
-        return res.json({message: 'invalid bearer token'});
+        return res.status(400).json({message: 'invalid bearer token'});
     }
     if(
         validatedTitle === false
     ){
-        return res.json({message: 'invalid task title'});
+        return res.status(400).json({message: 'invalid task title'});
     }
     if(
         validatedBody === false
     ){
-        return res.json({message: 'invalid task body'});
+        return res.status(400).json({message: 'invalid task body'});
     }
     accessToken = bearerToken.split(' ')[1];
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
         if(err){
-            return res.json({message: 'access token verification failed'});
+            return res.status(400).json({message: 'access token verification failed'});
         }
         findUser = await User.findOne({username: decoded.username}, '_id').lean().exec();
         if(
             findUser === null
         ){
-            return res.json({message: 'user not found'});
+            return res.status(404).json({message: 'user not found'});
         }
         pattern = `^${title}\$`;
         regex = new RegExp(pattern, "i");
@@ -55,14 +55,14 @@ const addTask = async (req, res) => {
         if(
             findTask !== null
         ){
-            return res.json({message: 'title already taken'});
+            return res.status(400).json({message: 'title already taken'});
         }
         await Task.create({
             title,
             body,
             user: findUser._id
         });
-        return res.json({message: 'task added'});
+        return res.status(201).json({message: 'task added'});
     });
 }
 module.exports = addTask;

@@ -7,17 +7,17 @@ const authorizeAdmin = (req, res, next) => {
     if(
         validatedBearerToken === false
     ){
-        return res.json({message: 'invalid bearer token'});
+        return res.status(400).json({message: 'invalid bearer token'});
     }
     accessToken = bearerToken.split(' ')[1];
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, function(err, decoded) {
         if(err){
-            return res.json({message: 'failed token verification'});
+            return res.status(400).json({message: 'failed token verification'});
         }
         if(
             decoded.role !== 'Admin'
         ){
-            return res.json({message: 'unauthorized'});
+            return res.status(403).json({message: 'unauthorized'});
         }
         next();
     });

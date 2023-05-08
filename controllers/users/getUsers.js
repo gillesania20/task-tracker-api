@@ -5,9 +5,9 @@ const getUsers = async (req, res) => {
     if(
         findUsers.length === 0
     ){
-        return res.json({message: 'no users yet'});
+        return res.status(200).json({message: 'no users yet'});
     }
-    return res.json(findUsers)
+    return res.status(200).json(findUsers)
 }
 
 module.exports = getUsers;

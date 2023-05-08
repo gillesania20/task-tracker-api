@@ -11,18 +11,18 @@ const addUser = async (req, res) => {
     if(
         validatedUsername === false
     ){
-        return res.json({message: 'invalid username. underscores, letters and numbers only'});
+        return res.status(400).json({message: 'invalid username. underscores, letters and numbers only'});
     }
     if(
         validatedPassword === false
     ){
-        return res.json({message: 'invalid password. minimum 8 characters with atleast one letter, one number and one special character'});
+        return res.status(400).json({message: 'invalid password. minimum 8 characters with atleast one letter, one number and one special character'});
     }
     findUser = await User.findOne({username}, '_id').lean().exec();
     if(
         findUser !== null
     ){
-        return res.json({message: 'invalid username'});
+        return res.status(400).json({message: 'invalid username'});
     }
     bcrypt.hash(password, saltRounds, async function(err, hash){
         await User.create({
@@ -30,6 +30,6 @@ const addUser = async (req, res) => {
             password: hash
         });
     });
-    return res.json({message: 'created new user'});
+    return res.status(201).json({message: 'created new user'});
 }
 module.exports = addUser;

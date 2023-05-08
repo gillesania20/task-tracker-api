@@ -6,7 +6,7 @@ const refresh = (req, res) => {
     if(
         refreshToken === undefined
     ){
-        return res.json({message: 'no refresh token'});
+        return res.status(404).json({message: 'no refresh token'});
     }
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, async function(err, decoded){
         let findUser = null;
@@ -14,13 +14,13 @@ const refresh = (req, res) => {
         if(
             err !== null
         ){
-            return res.json({message: 'invalid refresh token'});
+            return res.status(400).json({message: 'invalid refresh token'});
         }
         findUser = await User.findOne({username: decoded.username}, 'username role').lean().exec();
         if(
             findUser === null
         ){
-            return res.json({message: 'user not found'});
+            return res.status(404).json({message: 'user not found'});
         }
         accessToken = jwt.sign(
             {
@@ -32,7 +32,7 @@ const refresh = (req, res) => {
                 expiresIn: ACCESS_TOKEN_EXPIRES_IN
             }
         );
-        return res.json({accessToken});
+        return res.status(200).json({accessToken});
     });
 }
 module.exports = refresh;
