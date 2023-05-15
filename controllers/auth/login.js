@@ -1,4 +1,4 @@
-const User = require('./../../models/User');
+const { userFindOne } = require('./../../models/userQueries');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { validateUsername, validatePassword } = require('./../../functions/validation');
@@ -16,65 +16,83 @@ const login = async (req, res) => {
     const validatedUsername = validateUsername(username);
     const validatedPassword = validatePassword(password);
     let findUser = null;
+    let comparePassword = false;
     let accessToken = '';
     let refreshToken = '';
+    let response = null;
     if(
         validatedUsername === false
     ){
-        return res.status(400).json({message: 'invalid username'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid username',
+            accessToken: null
+        }
+    }else if(
         validatedPassword === false
     ){
-        return res.status(400).json({message: 'invalid password'});
-    }
-    findUser = await User.findOne({username}, 'username password role').lean().exec();
-    if(
-        findUser === null
-    ){
-        return res.status(400).json({message: 'invalid username or password'});
-    }
-    bcrypt.compare(password, findUser.password, function(err, result) {
-        if(
-            err
-        ){
-            return res.status(400).json({message: 'login error'});
+        response = {
+            status: 400,
+            message: 'invalid password',
+            accessToken: null
         }
+    }else{
+        findUser = await userFindOne({username}, 'username password role');
         if(
-            result === false
+            findUser === null
         ){
-            return res.status(400).json({message: 'invalid username or password'});
+            response = {
+                status: 400,
+                message: 'invalid username or password',
+                accessToken: null
+            }
+        }else{
+            comparePassword = await bcrypt.compare(password, findUser.password);
+            if(
+                comparePassword === false
+            ){
+                response = {
+                    status: 400,
+                    message: 'invalid username or password',
+                    accessToken: null
+                }
+            }else{
+                accessToken = jwt.sign(
+                    {
+                        username: findUser.username,
+                        role: findUser.role
+                    },
+                    process.env.ACCESS_TOKEN,
+                    {
+                        expiresIn: ACCESS_TOKEN_EXPIRES_IN
+                    }
+                );
+                refreshToken = jwt.sign(
+                    {
+                        username: findUser.username
+                    },
+                    process.env.REFRESH_TOKEN,
+                    {
+                        expiresIn: REFRESH_TOKEN_EXPIRES_IN
+                    }
+                );
+                res.cookie(
+                    'jwt',
+                    refreshToken,
+                    {
+                        maxAge: COOKIE_MAX_AGE,
+                        httpOnly: COOKIE_HTTP_ONLY,
+                        sameSite: COOKIE_SAME_SITE,
+                        secure: COOKIE_SECURE
+                    }
+                )
+                response = {status: 200, message: 'successful login', accessToken}
+            }
         }
-        accessToken = jwt.sign(
-            {
-                username: findUser.username,
-                role: findUser.role
-            },
-            process.env.ACCESS_TOKEN,
-            {
-                expiresIn: ACCESS_TOKEN_EXPIRES_IN
-            }
-        );
-        refreshToken = jwt.sign(
-            {
-                username: findUser.username
-            },
-            process.env.REFRESH_TOKEN,
-            {
-                expiresIn: REFRESH_TOKEN_EXPIRES_IN
-            }
-        );
-        res.cookie(
-            'jwt',
-            refreshToken,
-            {
-                maxAge: COOKIE_MAX_AGE,
-                httpOnly: COOKIE_HTTP_ONLY,
-                sameSite: COOKIE_SAME_SITE,
-                secure: COOKIE_SECURE
-            }
-        )
-        return res.status(200).json({accessToken});
+    }
+    return res.status(response.status).json({
+        message: response.message,
+        accessToken: response.accessToken
     });
 }
 module.exports = login;
