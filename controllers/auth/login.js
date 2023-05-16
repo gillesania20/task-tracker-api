@@ -1,4 +1,4 @@
-const { userFindOne } = require('./../../models/userQueries');
+const { userFindOne } = require('./../../models/user/userQueries');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { validateUsername, validatePassword } = require('./../../functions/validation');

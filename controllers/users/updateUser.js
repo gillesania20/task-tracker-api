@@ -1,4 +1,4 @@
-const User = require('./../../models/User');
+const User = require('./../../models/user/User');
 const bcrypt = require('bcrypt');
 const { validateId, validateUsername, validatePassword } = require('./../../functions/validation');
 const updateUser = async (req, res) => {

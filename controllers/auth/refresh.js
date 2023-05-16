@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { userFindOne } = require('./../../models/userQueries');
+const { userFindOne } = require('./../../models/user/userQueries');
 const { ACCESS_TOKEN_EXPIRES_IN } = require('./../../constants');
 const refresh = async (req, res) => {
     const refreshToken = req.cookies.jwt;

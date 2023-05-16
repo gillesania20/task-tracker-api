@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const User = require('./User');
+const User = require('./../user/User');
 const TaskSchema = new mongoose.Schema({
     title: {
         type: String,
