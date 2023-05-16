@@ -1,11 +1,11 @@
-const login = require('./../controllers/auth/login');
-const { userFindOne } = require('./../models/userQueries');
+const login = require('./../../../controllers/auth/login');
+const { userFindOne } = require('./../../../models/user/userQueries');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {
     validateUsername,
     validatePassword
-} = require('./../functions/validation');
+} = require('./../../../functions/validation');
 const {
     ACCESS_TOKEN_EXPIRES_IN,
     REFRESH_TOKEN_EXPIRES_IN,
@@ -13,11 +13,11 @@ const {
     COOKIE_HTTP_ONLY,
     COOKIE_SAME_SITE,
     COOKIE_SECURE
-} = require('./../constants');
-jest.mock('./../models/userQueries');
+} = require('./../../../constants');
+jest.mock('./../../../models/user/userQueries');
 jest.mock('jsonwebtoken');
 jest.mock('bcrypt');
-jest.mock('./../functions/validation');
+jest.mock('./../../../functions/validation');
 describe('POST /api/auth/login', () => {
     afterEach(() => {
         jest.clearAllMocks();

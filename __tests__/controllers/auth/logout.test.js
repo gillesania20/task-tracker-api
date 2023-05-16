@@ -1,4 +1,4 @@
-const logout = require('./../controllers/auth/logout');
+const logout = require('./../../../controllers/auth/logout');
 describe('POST api/auth/logout', () => {
     test('logout success', async () => {
         const STATIC_NAME = 'jwt';

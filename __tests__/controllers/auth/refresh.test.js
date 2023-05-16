@@ -1,9 +1,9 @@
-const refresh = require('./../controllers/auth/refresh');
+const refresh = require('./../../../controllers/auth/refresh');
 const jwt = require('jsonwebtoken');
-const { userFindOne } = require('./../models/userQueries');
-const { ACCESS_TOKEN_EXPIRES_IN } = require('./../constants');
+const { userFindOne } = require('./../../../models/user/userQueries');
+const { ACCESS_TOKEN_EXPIRES_IN } = require('./../../../constants');
 jest.mock('jsonwebtoken');
-jest.mock('./../models/userQueries');
+jest.mock('./../../../models/user/userQueries');
 describe('POST api/auth/refresh', () => {
     afterEach(() => {
         jest.clearAllMocks();
