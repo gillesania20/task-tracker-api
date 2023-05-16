@@ -1,38 +1,37 @@
 const jwt = require('jsonwebtoken');
-const User = require('./../../models/User');
+const { userFindOne } = require('./../../models/userQueries');
 const { ACCESS_TOKEN_EXPIRES_IN } = require('./../../constants');
-const refresh = (req, res) => {
+const refresh = async (req, res) => {
     const refreshToken = req.cookies.jwt;
+    let decoded = null;
+    let response = null;
+    let findUser = null;
+    let accessToken = '';
     if(
         refreshToken === undefined
     ){
-        return res.status(404).json({message: 'no refresh token'});
-    }
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN, async function(err, decoded){
-        let findUser = null;
-        let accessToken = '';
-        if(
-            err !== null
-        ){
-            return res.status(400).json({message: 'invalid refresh token'});
-        }
-        findUser = await User.findOne({username: decoded.username}, 'username role').lean().exec();
+        response = {status: 404, message: 'no refresh token', accessToken: null}
+    }else{
+        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, 'username role');
         if(
             findUser === null
         ){
-            return res.status(404).json({message: 'user not found'});
+            response = {status: 404, message: 'user not found', accessToken: null}
+        }else{
+            accessToken = jwt.sign(
+                {
+                    username: findUser.username,
+                    role: findUser.role
+                },
+                process.env.ACCESS_TOKEN,
+                {
+                    expiresIn: ACCESS_TOKEN_EXPIRES_IN
+                }
+            );
+            response = {status: 200, message: 'successful token refresh', accessToken};
         }
-        accessToken = jwt.sign(
-            {
-                username: findUser.username,
-                role: findUser.role
-            },
-            process.env.ACCESS_TOKEN,
-            {
-                expiresIn: ACCESS_TOKEN_EXPIRES_IN
-            }
-        );
-        return res.status(200).json({accessToken});
-    });
+    }
+    return res.status(response.status).json({message: response.message, accessToken: response.accessToken});
 }
 module.exports = refresh;

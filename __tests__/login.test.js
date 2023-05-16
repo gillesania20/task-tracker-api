@@ -1,3 +1,4 @@
+const login = require('./../controllers/auth/login');
 const { userFindOne } = require('./../models/userQueries');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -5,7 +6,6 @@ const {
     validateUsername,
     validatePassword
 } = require('./../functions/validation');
-const login = require('./../controllers/auth/login');
 const {
     ACCESS_TOKEN_EXPIRES_IN,
     REFRESH_TOKEN_EXPIRES_IN,
