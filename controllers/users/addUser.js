@@ -1,4 +1,4 @@
-const User = require('./../../models/user/User');
+const { userCreate, userFindOne} = require('./../../models/user/userQueries');
 const bcrypt = require('bcrypt');
 const { validateUsername, validatePassword } = require('./../../functions/validation');
 const addUser = async (req, res) => {
@@ -8,28 +8,43 @@ const addUser = async (req, res) => {
     const validatedUsername = validateUsername(username);
     const validatedPassword = validatePassword(password);
     let findUser = null;
+    let hashedPassword = '';
+    let response = null;
     if(
         validatedUsername === false
     ){
-        return res.status(400).json({message: 'invalid username. underscores, letters and numbers only'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid username. underscores, letters and numbers only'
+        }
+    }else if(
         validatedPassword === false
     ){
-        return res.status(400).json({message: 'invalid password. minimum 8 characters with atleast one letter, one number and one special character'});
+        response = {
+            status: 400,
+            message: 'invalid password. minimum 8 characters with atleast one letter, one number and one special character'
+        }
+    }else{
+        findUser = await userFindOne({username}, '_id');
+        if(
+            findUser !== null
+        ){
+            response = {
+                status: 400,
+                message: 'invalid username'
+            }
+        }else{
+            hashedPassword = bcrypt.hashSync(password, saltRounds)
+            await userCreate({
+                username,
+                password: hashedPassword
+            });
+            response = {
+                status: 201,
+                message: 'created new user'
+            }
+        }
     }
-    findUser = await User.findOne({username}, '_id').lean().exec();
-    if(
-        findUser !== null
-    ){
-        return res.status(400).json({message: 'invalid username'});
-    }
-    bcrypt.hash(password, saltRounds, async function(err, hash){
-        await User.create({
-            username,
-            password: hash
-        });
-    });
-    return res.status(201).json({message: 'created new user'});
+    return res.status(response.status).json({message: response.message});
 }
 module.exports = addUser;

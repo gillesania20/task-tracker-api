@@ -1,13 +1,27 @@
-const User = require('./../../models/user/User');
+const { userFind } = require('./../../models/user/userQueries');
 const getUsers = async (req, res) => {
     let findUsers = [];
-    findUsers = await User.find({}, 'username role active');
+    let response = null;
+    findUsers = await userFind({}, 'username role active');
     if(
         findUsers.length === 0
     ){
-        return res.status(200).json({message: 'no users yet'});
+        response = {
+            status: 200,
+            message: 'no users yet',
+            users: findUsers
+        }
+    }else{
+        response = {
+            status: 200,
+            message: 'users found',
+            users: findUsers
+        }
     }
-    return res.status(200).json(findUsers)
+    return res.status(response.status).json({
+        message: response.message,
+        users: response.users
+    });
 }
 
 module.exports = getUsers;

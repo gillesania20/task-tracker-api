@@ -1,21 +1,34 @@
-const User = require('./../../models/user/User');
+const { userFindOne, userDeleteOne } = require('./../../models/user/userQueries');
 const { validateId } = require('./../../functions/validation');
 const deleteUser = async (req, res) => {
     const id = req.params.id;
     const validatedId = validateId(id);
     let findUser = null;
+    let response = null;
     if(
         validatedId === false
     ){
-        return res.status(400).json({message: 'invalid id'});
+        response = {
+            status: 400,
+            message: 'invalid id'
+        }
+    }else{
+        findUser = await userFindOne({_id: id}, '_id');
+        if(
+            findUser === null
+        ){
+            response = {
+                status: 404,
+                message: 'user not found'
+            }
+        }else{
+            await userDeleteOne({_id: id});
+            response = {
+                status: 200,
+                message: 'user deleted'
+            }
+        }
     }
-    findUser = await User.findOne({_id: id}, '_id').lean().exec();
-    if(
-        findUser === null
-    ){
-        return res.status(404).json({message: 'user not found'});
-    }
-    await User.deleteOne({_id: id});
-    return res.status(200).json({message: 'user deleted'});
+    return res.status(response.status).json({message: response.message});
 }
 module.exports = deleteUser;

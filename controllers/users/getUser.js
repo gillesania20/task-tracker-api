@@ -1,20 +1,39 @@
-const User = require('./../../models/user/User');
+const { userFindOne } = require('./../../models/user/userQueries');
 const { validateId } = require('./../../functions/validation');
 const getUser = async (req, res) => {
     const id = req.params.id;
     const validatedId = validateId(id);
     let findUser = null;
+    let response = null;
     if(
         validatedId === false
     ){
-        return res.status(400).json({message: 'invalid id'});
+        response = {
+            status: 400,
+            message: 'invalid id',
+            user: null
+        }
+    }else{
+        findUser = await userFindOne({_id: id}, 'username role active');
+        if(
+            findUser === null
+        ){
+            response = {
+                status: 404,
+                message: 'user not found',
+                user: null
+            }
+        }else{
+            response = {
+                status: 200,
+                message: 'user found',
+                user: findUser
+            }
+        }
     }
-    findUser = await User.findOne({_id: id}, 'username role active');
-    if(
-        findUser === null
-    ){
-        return res.status(404).json({message: 'user not found'});
-    }
-    return res.status(200).json(findUser);
+    return res.status(response.status).json({
+        message: response.message,
+        user: response.user
+    })
 }
 module.exports = getUser;

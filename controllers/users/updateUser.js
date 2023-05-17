@@ -1,4 +1,4 @@
-const User = require('./../../models/user/User');
+const { userFindOne, userUpdateOne } = require('./../../models/user/userQueries');
 const bcrypt = require('bcrypt');
 const { validateId, validateUsername, validatePassword } = require('./../../functions/validation');
 const updateUser = async (req, res) => {
@@ -10,35 +10,65 @@ const updateUser = async (req, res) => {
     const validatedUsername = validateUsername(username);
     const validatedPassword = validatePassword(password);
     let user = null;
+    let hashedPassword = '';
+    let update = {};
+    let response = null;
     if(
         validatedId === false
     ){
-        return res.status(400).json({message: 'invalid id'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid id'
+        }
+    }else if(
         validatedUsername === false
     ){
-        return res.status(400).json({message: 'invalid username'});
-    }
-    if(
-        password.length <= 0
-    ){
-        user = await User.findOne({_id: id}, 'username').exec();
-        user.username = username;
-        await user.save();
-    }else{
-        if(
-            validatedPassword === false
-        ){
-            return res.status(400).json({message: 'invalid password'});
+        response = {
+            status: 400,
+            message: 'invalid username'
         }
-        bcrypt.hash(password, saltRounds, async function (err, hash) {
-            user = await User.findOne({_id: id}, 'username password').exec();
-            user.username = username;
-            user.password = hash;
-            await user.save();
-        });
+    }else{
+        user = await userFindOne({_id: id}, '_id username');
+        if( user === null){
+            response = {
+                status: 404,
+                message: 'user not found'
+            }
+        }else{
+            if(
+                typeof password === 'undefined' || password.length <= 0 
+            ){
+                update = {};
+                (user.username !== username)? update.username = username : '';
+                if(Object.keys(update).length !== 0){
+                    await userUpdateOne({_id: id}, update);
+                }
+                response = {
+                    status: 200,
+                    message: 'updated user'
+                }
+            }else{
+                if(
+                    validatedPassword === false
+                ){
+                    response = {
+                        status: 400,
+                        message: 'invalid password'
+                    }
+                }else{
+                    hashedPassword = bcrypt.hashSync(password, saltRounds);
+                    update = {};
+                    (user.username !== username)? update.username = username : '';
+                    update.password = password;
+                    await userUpdateOne({_id: id}, update);
+                    response = {
+                        status: 200,
+                        message: 'updated user'
+                    }
+                }
+            }
+        }
     }
-    return res.status(200).json({message: 'updated user'});
+    return res.status(response.status).json({message: response.message});
 }
 module.exports = updateUser;
