@@ -1,25 +1,42 @@
+const { userFindOne } = require('./../../models/users/userQueries');
 const jwt = require('jsonwebtoken');
 const { validateBearerToken } = require('./../../functions/validation');
-const authorizeAdmin = (req, res, next) => {
-    const bearerToken = req.headers.authorization || req.headers.Authorization;
+const authorizeAdmin = async (req, res, next) => {
+    const bearerToken = req.headers.authorization;
     const validatedBearerToken = validateBearerToken(bearerToken);
-    let accessToken = {}
+    let accessToken = null;
+    let decoded = null;
+    let response = null;
+    let findUser = null;
     if(
         validatedBearerToken === false
     ){
-        return res.status(400).json({message: 'invalid bearer token'});
-    }
-    accessToken = bearerToken.split(' ')[1];
-    jwt.verify(accessToken, process.env.ACCESS_TOKEN, function(err, decoded) {
-        if(err){
-            return res.status(400).json({message: 'failed token verification'});
+        response = {
+            status: 400,
+            message: 'invalid bearer token'
         }
+    }else{
+        accessToken = bearerToken.split(' ')[1];
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, '_id');
         if(
+            findUser === null
+        ){
+            response = {
+                status: 404,
+                message: 'user not found'
+            }
+        }else if(
             decoded.role !== 'Admin'
         ){
-            return res.status(403).json({message: 'unauthorized'});
+            response = {
+                status: 403,
+                message: 'unauthorized'
+            }
+        }else{
+            return next();
         }
-        next();
-    });
+    }
+    return res.status(response.status).json({message: response.message});
 }
 module.exports = authorizeAdmin;
