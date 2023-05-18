@@ -1,6 +1,6 @@
 const getUsers = require('./../../../controllers/users/getUsers');
-const { userFind } = require('./../../../models/user/userQueries');
-jest.mock('./../../../models/user/userQueries');
+const { userFind } = require('./../../../models/users/userQueries');
+jest.mock('./../../../models/users/userQueries');
 describe('GET api/users', () => {
     afterEach(() => {
         jest.clearAllMocks();

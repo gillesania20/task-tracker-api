@@ -1,6 +1,6 @@
-const User = require('./../models/user/User');
+const User = require('./../../models/users/User');
 const jwt = require('jsonwebtoken');
-const { validateId, validateBearerToken } = require('./../functions/validation');
+const { validateId, validateBearerToken } = require('./../../functions/validation');
 const authorizedUser = (req, res, next) => {
     const bearerToken = req.headers.authorization || req.headers.Authorization;
     const id = req.params.id;

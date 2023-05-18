@@ -1,4 +1,4 @@
-const { userCreate, userFindOne} = require('./../../models/user/userQueries');
+const { userCreate, userFindOne} = require('./../../models/users/userQueries');
 const bcrypt = require('bcrypt');
 const { validateUsername, validatePassword } = require('./../../functions/validation');
 const addUser = async (req, res) => {

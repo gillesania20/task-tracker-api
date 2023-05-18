@@ -1,5 +1,5 @@
 const login = require('./../../../controllers/auth/login');
-const { userFindOne } = require('./../../../models/user/userQueries');
+const { userFindOne } = require('./../../../models/users/userQueries');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {
@@ -14,7 +14,7 @@ const {
     COOKIE_SAME_SITE,
     COOKIE_SECURE
 } = require('./../../../constants');
-jest.mock('./../../../models/user/userQueries');
+jest.mock('./../../../models/users/userQueries');
 jest.mock('jsonwebtoken');
 jest.mock('bcrypt');
 jest.mock('./../../../functions/validation');

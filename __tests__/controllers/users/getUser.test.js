@@ -1,7 +1,7 @@
 const getUser = require('./../../../controllers/users/getUser');
-const { userFindOne } = require('./../../../models/user/userQueries');
+const { userFindOne } = require('./../../../models/users/userQueries');
 const { validateId } = require('./../../../functions/validation');
-jest.mock('./../../../models/user/userQueries');
+jest.mock('./../../../models/users/userQueries');
 jest.mock('./../../../functions/validation');
 describe('GET api/users/:userId', () => {
     afterEach(() => {

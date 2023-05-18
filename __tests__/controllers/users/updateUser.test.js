@@ -1,8 +1,8 @@
 const updateUser = require('./../../../controllers/users/updateUser');
-const { userFindOne, userUpdateOne } = require('./../../../models/user/userQueries');
+const { userFindOne, userUpdateOne } = require('./../../../models/users/userQueries');
 const bcrypt = require('bcrypt');
 const { validateId, validateUsername, validatePassword } = require('./../../../functions/validation');
-jest.mock('./../../../models/user/userQueries');
+jest.mock('./../../../models/users/userQueries');
 jest.mock('bcrypt');
 jest.mock('./../../../functions/validation');
 describe('PATCH api/users/:userId', () => {

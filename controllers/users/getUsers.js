@@ -1,4 +1,4 @@
-const { userFind } = require('./../../models/user/userQueries');
+const { userFind } = require('./../../models/users/userQueries');
 const getUsers = async (req, res) => {
     let findUsers = [];
     let response = null;

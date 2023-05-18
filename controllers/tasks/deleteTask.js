@@ -1,5 +1,5 @@
-const User = require('./../../models/user/User');
-const Task = require('./../../models/task/Task');
+const User = require('./../../models/users/User');
+const Task = require('./../../models/tasks/Task');
 const jwt = require('jsonwebtoken');
 const { validateId, validateBearerToken } = require('./../../functions/validation');
 const deleteTask = (req, res) => {

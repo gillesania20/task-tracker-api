@@ -1,4 +1,4 @@
-const { userFindOne, userDeleteOne } = require('./../../models/user/userQueries');
+const { userFindOne, userDeleteOne } = require('./../../models/users/userQueries');
 const { validateId } = require('./../../functions/validation');
 const deleteUser = async (req, res) => {
     const id = req.params.id;

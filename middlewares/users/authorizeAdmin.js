@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { validateBearerToken } = require('./../functions/validation');
+const { validateBearerToken } = require('./../../functions/validation');
 const authorizeAdmin = (req, res, next) => {
     const bearerToken = req.headers.authorization || req.headers.Authorization;
     const validatedBearerToken = validateBearerToken(bearerToken);

@@ -1,7 +1,7 @@
 const deleteUser = require('./../../../controllers/users/deleteUser');
-const { userFindOne, userDeleteOne } = require('./../../../models/user/userQueries');
+const { userFindOne, userDeleteOne } = require('./../../../models/users/userQueries');
 const { validateId } = require('./../../../functions/validation');
-jest.mock('./../../../models/user/userQueries');
+jest.mock('./../../../models/users/userQueries');
 jest.mock('./../../../functions/validation');
 describe('DELETE api/users/:userId', () => {
     afterEach(() => {
