@@ -1,5 +1,5 @@
-const User = require('./../../models/users/User');
-const Task = require('./../../models/tasks/Task');
+const { userFindOne } = require('./../../models/users/userQueries');
+const { taskFindOne, taskCreate } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const {
     validateBearerToken,
@@ -7,7 +7,7 @@ const {
     validateTaskBody
 } = require('./../../functions/validation');
 const addTask = async (req, res) => {
-    const bearerToken = req.headers.authorization || req.headers.Authorization;
+    const bearerToken = req.headers.authorization;
     const title = req.body.title;
     const body = req.body.body;
     const validatedBearerToken = validateBearerToken(bearerToken);
@@ -17,52 +17,72 @@ const addTask = async (req, res) => {
     let regex = null;
     let findTask = null;
     let findUser = null;
+    let decoded = null;
+    let response = null;
     if(
         validatedBearerToken === false
     ){
-        return res.status(400).json({message: 'invalid bearer token'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid bearer tokne'
+        };
+    }else if(
         validatedTitle === false
     ){
-        return res.status(400).json({message: 'invalid task title'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid task title'
+        };
+    }else if(
         validatedBody === false
     ){
-        return res.status(400).json({message: 'invalid task body'});
-    }
-    accessToken = bearerToken.split(' ')[1];
-    jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
-        if(err){
-            return res.status(400).json({message: 'access token verification failed'});
-        }
-        findUser = await User.findOne({username: decoded.username}, '_id').lean().exec();
+        response = {
+            status: 400,
+            message: 'invalid task body'
+        };
+    }else{
+        accessToken = bearerToken.split(' ')[1];
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, '_id');
         if(
             findUser === null
         ){
-            return res.status(404).json({message: 'user not found'});
+            response = {
+                status: 404,
+                message: 'user not found'
+            };
+        }else{
+            pattern = `^${title}\$`;
+            regex = new RegExp(pattern, "i");
+            findTask = await taskFindOne(
+                {
+                    title: {$regex: regex},
+                    user: findUser._id
+                },
+                '_id'
+            );
+            if(
+                findTask !== null
+            ){
+                response = {
+                    status: 400,
+                    message: 'title already taken'
+                };
+            }else{
+                await taskCreate({
+                    title,
+                    body,
+                    user: findUser._id
+                });
+                response = {
+                    status: 201,
+                    message: 'task added'
+                };
+            }
         }
-        pattern = `^${title}\$`;
-        regex = new RegExp(pattern, "i");
-        findTask = await Task.findOne(
-            {
-                title: {$regex: regex},
-                user: findUser._id
-            },
-            '_id'
-        ).lean().exec();
-        if(
-            findTask !== null
-        ){
-            return res.status(400).json({message: 'title already taken'});
-        }
-        await Task.create({
-            title,
-            body,
-            user: findUser._id
-        });
-        return res.status(201).json({message: 'task added'});
+    }
+    return res.status(response.status).json({
+        message: response.message
     });
 }
 module.exports = addTask;

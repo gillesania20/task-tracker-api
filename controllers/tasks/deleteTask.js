@@ -1,8 +1,8 @@
-const User = require('./../../models/users/User');
-const Task = require('./../../models/tasks/Task');
+const { userFindOne } = require('./../../models/users/userQueries');
+const { taskFindOne, taskDeleteOne} = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const { validateId, validateBearerToken } = require('./../../functions/validation');
-const deleteTask = (req, res) => {
+const deleteTask = async (req, res) => {
     const bearerToken = req.headers.authorization || req.headers.Authorization;
     const id = req.params.id;
     const validatedId = validateId(id);
@@ -10,55 +10,78 @@ const deleteTask = (req, res) => {
     let accessToken = '';
     let findUser = null;
     let findTask = null;
+    let decoded = null;
+    let response = null;
     if(
         validatedBearerToken === false
     ){
-        return res.status(400).json({message: 'invalid bearer token'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid bearer token'
+        };
+    }else if(
         validatedId === false
     ){
-        return res.status(400).json({message: 'invalid task id'});
-    }
-    accessToken = bearerToken.split(' ')[1];
-    jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
-        if(err){
-            return res.status(400).json({message: 'access token verification failed'});
-        }
-        findUser = await User.findOne({username: decoded.username}, '_id')
-            .lean().exec();
+        response = {
+            status: 400,
+            message: 'invalid task id'
+        };
+    }else{
+        accessToken = bearerToken.split(' ')[1];
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, '_id');
         if(
             findUser === null
         ){
-            return res.status(404).json({message: 'user not found'});
-        }
-        if(
+            response = {
+                status: 404,
+                message: 'user not found'
+            };
+        }else if(
             decoded.role === 'Admin'
         ){
-            findTask = await Task.findOne({_id: id})
-                .lean().exec();
+            findTask = await taskFindOne({_id: id});
             if(
                 findTask === null
             ){
-                return res.status(404).json({message: 'task not found'});
+                response = {
+                    status: 404,
+                    message: 'task not found'
+                };
+            }else{
+                await taskDeleteOne({_id: findTask._id});
+                response = {
+                    status: 200,
+                    message: 'task deleted'
+                };
             }
-            await Task.deleteOne({_id: findTask._id});
-            return res.status(200).json({message: 'task deleted'});
         }else if(
             decoded.role === 'User'
         ){
-            findTask = await Task.findOne({_id: id, user: findUser._id}, '_id')
-                .lean().exec();
+            findTask = await taskFindOne({_id: id, user: findUser._id}, '_id');
             if(
                 findTask === null
             ){
-                return res.status(404).json({message: 'task not found'});
+                response = {
+                    status: 404,
+                    message: 'task not found'
+                };
+            }else{
+                await taskDeleteOne({_id: findTask._id});
+                response = {
+                    status: 200,
+                    message: 'task deleted'
+                };
             }
-            await Task.deleteOne({_id: findTask._id});
-            return res.status(200).json({message: 'task deleted'});
         }else{
-            return res.status(403).json({message: 'unauthorized'});
+            response = {
+                status: 403,
+                message: 'unauthorized'
+            };
         }
+    }
+    return res.status(response.status).json({
+        message: response.message
     });
 }
 module.exports = deleteTask;

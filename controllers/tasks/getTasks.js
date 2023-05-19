@@ -1,55 +1,85 @@
-const User = require('./../../models/users/User');
-const Task = require('./../../models/tasks/Task');
+const { userFindOne } = require('./../../models/users/userQueries');
+const { taskFind } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const { validateBearerToken } = require('./../../functions/validation');
-const getTasks = (req, res) => {
-    const bearerToken = req.headers.authorization || req.headers.Authorization;
+const getTasks = async (req, res) => {
+    const bearerToken = req.headers.authorization;
     const validatedBearerToken = validateBearerToken(bearerToken);
     let accessToken = '';
     let findUser = null;
     let findTasks = [];
+    let decoded = null;
+    let response = null;
     if(
         validatedBearerToken === false
     ){
-        return res.status(400).json({message: 'invalid bearer token'});
-    }
-    accessToken = bearerToken.split(' ')[1];
-    jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
-        if(err){
-            return res.status(400).json({message: 'access token verification failed'});
-        }
+        response = {
+            status: 400,
+            message: 'invalid bearer token',
+            tasks: null
+        };
+    }else{
+        accessToken = bearerToken.split(' ')[1];
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, '_id');
         if(
+            findUser === null
+        ){
+            response = {
+                status: 404,
+                message: 'user not found',
+                tasks: null
+            };
+        }else if(
             decoded.role === 'Admin'
         ){
-            findTasks = await Task.find({}, '_id user title body completed completedAt')
-                .populate('user', 'username -_id').lean().exec();
+            findTasks = await taskFind({}
+                ,'_id user title body completed completedAt');
             if(
                 findTasks.length <= 0
             ){
-                return res.status(200).json({message: 'no tasks yet'});
+                response = {
+                    status: 200,
+                    message: 'no tasks yet',
+                    tasks: []
+                }
             }else{
-                return res.status(200).json(findTasks);
+                response = {
+                    status: 200,
+                    message: 'display tasks',
+                    tasks: findTasks
+                };
             }
         }else if(
             decoded.role === 'User'
         ){
-            findUser = await User.findOne({username: decoded.username}, '_id').lean().exec();
-            if(
-                findUser === null
-            ){
-                return res.status(404).json({message: 'user not found'});
-            }
-            findTasks = await Task.find({user: findUser._id}, '_id user title body completed completedAt')
-                .populate('user', 'username').lean().exec();
+            findTasks = await taskFind({user: findUser._id}
+                ,'_id user title body completed completedAt');
             if(
                 findTasks.length <= 0
             ){
-                return res.status(200).json({message: 'no tasks yet'});
+                response = {
+                    status: 200,
+                    message: 'no tasks yet',
+                    tasks: []
+                };
+            }else{
+                response = {
+                    status: 200,
+                    message: 'display tasks',
+                    tasks: findTasks
+                };
             }
-            return res.status(200).json(findTasks);
         }else{
-            return res.status(403).json({message: 'unauthorized'});
+            response = {
+                status: 403,
+                message: 'unauthorized'
+            };
         }
+    }
+    return res.status(response.status).json({
+        message: response.message,
+        tasks: response.tasks
     });
 }
 module.exports = getTasks;

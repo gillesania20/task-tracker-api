@@ -1,8 +1,8 @@
-const User = require('./../../models/users/User');
-const Task = require('./../../models/tasks/Task');
+const { userFindOne } = require('./../../models/users/userQueries');
+const { taskFindOne } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const { validateId, validateBearerToken } = require('./../../functions/validation');
-const getTask = (req, res) => {
+const getTask = async (req, res) => {
     const id = req.params.id;
     const bearerToken = req.headers.authorization || req.headers.Authorization;
     const validatedId = validateId(id);
@@ -10,52 +10,85 @@ const getTask = (req, res) => {
     let accessToken = '';
     let findUser = null;
     let findTask = null;
+    let decoded = null;
+    let response = null;
     if(
         validatedId === false
     ){
-        return res.status(400).json({message: 'invalid id'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid id',
+            task: null
+        };
+    }else if(
         validatedBearerToken === false
     ){
-        return res.status(400).json({message: 'invalid bearer token'});
-    }
-    accessToken = bearerToken.split(' ')[1];
-    jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
-        if(err){
-            return res.status(400).json({message: 'access token verification failed'});
-        }
-        findUser = await User.findOne({username: decoded.username}, '_id').lean().exec();
+        response = {
+            status: 400,
+            message: 'invalid bearer token',
+            task: null
+        };
+    }else{
+        accessToken = bearerToken.split(' ')[1];
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, '_id');
         if(
             findUser === null
         ){
-            return res.status(404).json({message: 'user not found'});
-        }
-        if(
+            response = {
+                status: 404,
+                message: 'user not found',
+                task: null
+            };
+        }else if(
             decoded.role === 'Admin'
         ){
-            findTask = await Task.findOne({_id: id}, '-_id user title body completed completedAt')
-                .populate('user', 'username -_id').lean().exec();
+            findTask = await taskFindOne({_id: id},
+                '-_id user title body completed completedAt');
             if(
                 findTask === null
             ){
-                return res.status(404).json({message: 'task not found'});
+                response = {
+                    status: 404,
+                    message: 'task not found',
+                    task: null
+                };
+            }else{
+                response = {
+                    status: 200,
+                    message: 'display task',
+                    task: findTask
+                };
             }
-            return res.status(200).json(findTask);
         }else if(
             decoded.role === 'User'
         ){
-            findTask = await Task.findOne({_id: id, user: findUser._id}, '-_id user title body completed completedAt')
-                .populate('user', 'username').lean().exec();
+            findTask = await taskFindOne({_id: id, user: findUser._id},
+                    '-_id user title body completed completedAt');
             if(
                 findTask === null
             ){
-                return res.status(404).json({message: 'task not found'});
+                response = {
+                    status: 404,
+                    message: 'task not found'
+                };
+            }else{
+                response = {
+                    status: 200,
+                    message: 'display task',
+                    task: findTask
+                };
             }
-            return res.status(200).json(findTask);
         }else{
-            return res.status(403).json({message: 'unauthorized'});
+            response = {
+                status: 403,
+                message: 'unauthorized'
+            };
         }
+    }
+    return res.status(response.status).json({
+        message: response.message,
+        task: response.task
     });
 }
 module.exports = getTask;
