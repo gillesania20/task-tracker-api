@@ -72,57 +72,70 @@ const updateTask = async (req, res) => {
                 message: 'user not found'
             };
         }else{
-            findTask = await taskFindOne({_id: id},
-                '_id title body completed completedAt');
             if(
-                findTask === null
-            ){
-                response = {
-                    status: 404,
-                    message: 'task not found'
-                };
-            }else if(
                 decoded.role === 'Admin'
             ){
-                update = {};
-                if(typeof title !== 'undefined'){
-                    update.title = title;
-                }
-                if(typeof body !== 'undefined'){
-                    update.body = body;
-                }
-                if(typeof completed !== 'undefined'){
-                    update.completed = completed;
-                    if(findTask.completed === false && completed === true){
-                        update.completedAt = Date.now();
+                findTask = await taskFindOne({_id: id},
+                    '_id title body completed completedAt');
+                if(
+                    findTask === null
+                ){
+                    response = {
+                        status: 404,
+                        message: 'task not found'
+                    };
+                }else{
+                    update = {};
+                    if(typeof title !== 'undefined'){
+                        update.title = title;
                     }
+                    if(typeof body !== 'undefined'){
+                        update.body = body;
+                    }
+                    if(typeof completed !== 'undefined'){
+                        update.completed = completed;
+                        if(findTask.completed === false && completed === true){
+                            update.completedAt = Date.now();
+                        }
+                    }
+                    await taskUpdateOne({ _id: findTask._id.toString()}, update);
+                    response = {
+                        status: 200,
+                        message: 'task updated'
+                    };
                 }
-                await taskUpdateOne({ _id: findTask._id.toString()}, update);
-                response = {
-                    status: 200,
-                    message: 'task updated'
-                };
             }else if(
                 decoded.role === 'User'
             ){
-                update = {};
-                if(typeof title !== 'undefined'){
-                    update.title = title;
-                }
-                if(typeof body !== 'undefined'){
-                    update.body = body;
-                }
-                if(typeof completed !== 'undefined'){
-                    update.completed = completed;
-                    if(findTask.completed === false && completed === true){
-                        update.completedAt = Date.now();
+                findTask = await taskFindOne({_id: id, user: findUser._id.toString()},
+                    '_id title body completed completedAt');
+                if(
+                    findTask === null
+                ){
+                    response = {
+                        status: 404,
+                        message: 'task not found'
+                    };
+                }else{
+                    update = {};
+                    if(typeof title !== 'undefined'){
+                        update.title = title;
                     }
+                    if(typeof body !== 'undefined'){
+                        update.body = body;
+                    }
+                    if(typeof completed !== 'undefined'){
+                        update.completed = completed;
+                        if(findTask.completed === false && completed === true){
+                            update.completedAt = Date.now();
+                        }
+                    }
+                    await taskUpdateOne({ _id: findTask._id.toString()}, update);
+                    response = {
+                        status: 200,
+                        message: 'task updated'
+                    };
                 }
-                await taskUpdateOne({ _id: findTask._id.toString()}, update);
-                response = {
-                    status: 200,
-                    message: 'task updated'
-                };
             }else{
                 response = {
                     status: 403,

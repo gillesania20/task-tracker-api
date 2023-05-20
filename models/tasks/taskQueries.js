@@ -6,6 +6,11 @@ const taskFind = async (filter, projection) => {
 }
 const taskFindOne = async (conditions, projection) => {
     const query = await Task.findOne( conditions, projection)
+        .lean().exec();
+    return query;
+}
+const taskFindOneAndPopulate = async (conditions, projection) => {
+    const query = await Task.findOne( conditions, projection)
         .populate('user', 'username').lean().exec();
     return query;
 }
@@ -24,6 +29,7 @@ const taskUpdateOne = async (filter, update) => {
 module.exports = {
     taskFind,
     taskFindOne,
+    taskFindOneAndPopulate,
     taskCreate,
     taskDeleteOne,
     taskUpdateOne

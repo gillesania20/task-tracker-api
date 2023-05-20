@@ -34,7 +34,7 @@ const getTasks = async (req, res) => {
             decoded.role === 'Admin'
         ){
             findTasks = await taskFind({}
-                ,'_id user title body completed completedAt');
+                ,'_id title body completed completedAt');
             if(
                 findTasks.length <= 0
             ){
@@ -54,7 +54,7 @@ const getTasks = async (req, res) => {
             decoded.role === 'User'
         ){
             findTasks = await taskFind({user: findUser._id}
-                ,'_id user title body completed completedAt');
+                ,'_id title body completed completedAt');
             if(
                 findTasks.length <= 0
             ){

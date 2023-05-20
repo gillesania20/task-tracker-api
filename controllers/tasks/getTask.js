@@ -1,5 +1,5 @@
 const { userFindOne } = require('./../../models/users/userQueries');
-const { taskFindOne } = require('./../../models/tasks/taskQueries');
+const { taskFindOneAndPopulate } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const { validateId, validateBearerToken } = require('./../../functions/validation');
 const getTask = async (req, res) => {
@@ -43,8 +43,8 @@ const getTask = async (req, res) => {
         }else if(
             decoded.role === 'Admin'
         ){
-            findTask = await taskFindOne({_id: id},
-                '-_id user title body completed completedAt');
+            findTask = await taskFindOneAndPopulate({_id: id},
+                '-_id title body completed completedAt');
             if(
                 findTask === null
             ){
@@ -63,8 +63,8 @@ const getTask = async (req, res) => {
         }else if(
             decoded.role === 'User'
         ){
-            findTask = await taskFindOne({_id: id, user: findUser._id},
-                    '-_id user title body completed completedAt');
+            findTask = await taskFindOneAndPopulate({_id: id, user: findUser._id},
+                    '-_id title body completed completedAt');
             if(
                 findTask === null
             ){
