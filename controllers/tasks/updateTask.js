@@ -1,5 +1,5 @@
-const User = require('./../../models/users/User');
-const Task = require('./../../models/tasks/Task');
+const { userFindOne } = require('./../../models/users/userQueries');
+const { taskFindOne, taskUpdateOne } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const {
     validateId,
@@ -8,8 +8,8 @@ const {
     validateTaskBody,
     validateTaskCompleted
 } = require('./../../functions/validation');
-const updateTask = (req, res) => {
-    const bearerToken = req.headers.authorization || req.headers.Authorization;
+const updateTask = async (req, res) => {
+    const bearerToken = req.headers.authorization;
     const id = req.params.id;
     const title = req.body.title;
     const body = req.body.body;
@@ -21,139 +21,118 @@ const updateTask = (req, res) => {
     const validatedCompleted = validateTaskCompleted(completed);
     let findUser = null;
     let findTask = null;
-    let origTask = {};
     let accessToken = '';
+    let decoded = null;
+    let update = null;
+    let response = null;
     if(
         validatedBearerToken === false
     ){
-        return res.status(400).json({message: 'invalid bearer token'});
-    }
-    if(
+        response = {
+            status: 400,
+            message: 'invalid bearer token'
+        };
+    }else if(
         validatedId === false
     ){
-        return res.status(400).json({message: 'invalid task id'});
-    }
-    if(
-        validatedTitle === false
+        response = {
+            status: 400,
+            message: 'invalid task id'
+        };
+    }else if(
+        typeof title !== 'undefined' && validatedTitle === false
     ){
-        return res.status(400).json({message: 'invalid task title'});
-    }
-    if(
-        validatedBody === false
+        response = {
+            status: 400,
+            message: 'invalid task title'
+        };
+    }else if(
+        typeof body !== 'undefined' && validatedBody === false
     ){
-        return res.status(400).json({message: 'invalid task body'});
-    }
-    if(
-        validatedCompleted === false
+        response = {
+            status: 400,
+            message: 'invalid task body'
+        };
+    }else if(
+        typeof completed !== 'undefined' && validatedCompleted === false
     ){
-        return res.status(400).json({message: 'invalid task completed'});
-    }
-    accessToken = bearerToken.split(' ')[1];
-    jwt.verify(accessToken, process.env.ACCESS_TOKEN, async function(err, decoded){
-        if(err){
-            return res.status(400).json({message: 'access token verification failed'});
-        }
-        findUser = await User.findOne({username: decoded.username}, '_id').lean().exec();
+        response = {
+            status: 400,
+            message: 'invalid task completed'
+        };
+    }else{
+        accessToken = bearerToken.split(' ')[1];
+        decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+        findUser = await userFindOne({username: decoded.username}, '_id');
         if(
             findUser === null
         ){
-            return res.status(404).json({message: 'user not found'});
-        }
-        if(
-            decoded.role === 'Admin'
-        ){
-            findTask = await Task.findOne({_id: id}, 'id title body completed completedAt')
-                .exec();
-            if(
-                findTask === null
-            ){
-                return res.status(404).json({message: 'task not find'});
-            }else{
-                origTask.title = findTask.title;
-                origTask.body = findTask.body;
-                origTask.completed = findTask.completed;
-            }
-            if(
-                findTask.title !== title
-            ){
-                findTask.title = title;
-            }
-            if(
-                findTask.body !== body
-            ){
-                findTask.body = body;
-            }
-            if(
-                findTask.completed !== completed
-            ){
-                if(
-                    findTask.completed === false
-                    && completed === true
-                ){
-                    findTask.completed = true;
-                    findTask.completedAt = Date.now();
-                }else{
-                    findTask.completed = completed;
-                }
-            }
-            if(
-                origTask.title !== findTask.title
-                || origTask.body !== findTask.body
-                || origTask.completed !== findTask.completed
-            ){
-                await findTask.save();
-            }
-            return res.status(200).json({message: 'task updated'});
-        }else if(
-            decoded.role === 'User'
-        ){
-            findTask = await Task.findOne(
-                {_id: id, user: findUser._id},
-                'id user title body completed completedAt'
-            ).exec();
-            if(
-                findTask === null
-            ){
-                return res.status(404).json({message: 'task not found'});
-            }else{
-                origTask.title = findTask.title;
-                origTask.body = findTask.body;
-                origTask.completed = findTask.completed;
-            }
-            if(
-                findTask.title !== title
-            ){
-                findTask.title = title;
-            }
-            if(
-                findTask.body !== body
-            ){
-                findTask.body = body;
-            }
-            if(
-                findTask.completed !== completed
-            ){
-                if(
-                    findTask.completed === false
-                    && completed === true
-                ){
-                    findTask.completed = completed;
-                    findTask.completedAt = Date.now();
-                }else{
-                    findTask.completed = completed;
-                }
-            }
-            if(
-                origTask.title !== findTask.title
-                || origTask.body !== findTask.body
-                || origTask.completed !== findTask.completed
-            ){
-                await findTask.save();
-            }
-            return res.status(200).json({message: 'task updated'});
+            response = {
+                status: 404,
+                message: 'user not found'
+            };
         }else{
-            return res.status(403).json({message: 'unauthorized'});
+            findTask = await taskFindOne({_id: id},
+                '_id title body completed completedAt');
+            if(
+                findTask === null
+            ){
+                response = {
+                    status: 404,
+                    message: 'task not found'
+                };
+            }else if(
+                decoded.role === 'Admin'
+            ){
+                update = {};
+                if(typeof title !== 'undefined'){
+                    update.title = title;
+                }
+                if(typeof body !== 'undefined'){
+                    update.body = body;
+                }
+                if(typeof completed !== 'undefined'){
+                    update.completed = completed;
+                    if(findTask.completed === false && completed === true){
+                        update.completedAt = Date.now();
+                    }
+                }
+                await taskUpdateOne({ _id: findTask._id.toString()}, update);
+                response = {
+                    status: 200,
+                    message: 'task updated'
+                };
+            }else if(
+                decoded.role === 'User'
+            ){
+                update = {};
+                if(typeof title !== 'undefined'){
+                    update.title = title;
+                }
+                if(typeof body !== 'undefined'){
+                    update.body = body;
+                }
+                if(typeof completed !== 'undefined'){
+                    update.completed = completed;
+                    if(findTask.completed === false && completed === true){
+                        update.completedAt = Date.now();
+                    }
+                }
+                await taskUpdateOne({ _id: findTask._id.toString()}, update);
+                response = {
+                    status: 200,
+                    message: 'task updated'
+                };
+            }else{
+                response = {
+                    status: 403,
+                    message: 'unauthorized'
+                };
+            }
         }
+    }
+    return res.status(response.status).json({
+        message: response.message
     });
 }
 module.exports = updateTask;
