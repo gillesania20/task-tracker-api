@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { validateId, validateBearerToken } = require('./../../functions/validation');
 const getTask = async (req, res) => {
     const id = req.params.id;
-    const bearerToken = req.headers.authorization || req.headers.Authorization;
+    const bearerToken = req.headers.authorization;
     const validatedId = validateId(id);
     const validatedBearerToken = validateBearerToken(bearerToken);
     let accessToken = '';
@@ -70,7 +70,8 @@ const getTask = async (req, res) => {
             ){
                 response = {
                     status: 404,
-                    message: 'task not found'
+                    message: 'task not found',
+                    task: null
                 };
             }else{
                 response = {
@@ -82,7 +83,8 @@ const getTask = async (req, res) => {
         }else{
             response = {
                 status: 403,
-                message: 'unauthorized'
+                message: 'unauthorized',
+                task: null
             };
         }
     }
