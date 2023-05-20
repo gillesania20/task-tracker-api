@@ -3,7 +3,7 @@ const { taskFindOne, taskDeleteOne} = require('./../../models/tasks/taskQueries'
 const jwt = require('jsonwebtoken');
 const { validateId, validateBearerToken } = require('./../../functions/validation');
 const deleteTask = async (req, res) => {
-    const bearerToken = req.headers.authorization || req.headers.Authorization;
+    const bearerToken = req.headers.authorization;
     const id = req.params.id;
     const validatedId = validateId(id);
     const validatedBearerToken = validateBearerToken(bearerToken);
@@ -40,7 +40,7 @@ const deleteTask = async (req, res) => {
         }else if(
             decoded.role === 'Admin'
         ){
-            findTask = await taskFindOne({_id: id});
+            findTask = await taskFindOne({_id: id}, '_id');
             if(
                 findTask === null
             ){
