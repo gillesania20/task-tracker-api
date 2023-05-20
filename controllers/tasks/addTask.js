@@ -24,7 +24,7 @@ const addTask = async (req, res) => {
     ){
         response = {
             status: 400,
-            message: 'invalid bearer tokne'
+            message: 'invalid bearer token'
         };
     }else if(
         validatedTitle === false
