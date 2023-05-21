@@ -76,7 +76,7 @@ const updateTask = async (req, res) => {
                 decoded.role === 'Admin'
             ){
                 findTask = await taskFindOne({_id: id},
-                    '_id title body completed completedAt');
+                    '_id completed');
                 if(
                     findTask === null
                 ){
@@ -108,7 +108,7 @@ const updateTask = async (req, res) => {
                 decoded.role === 'User'
             ){
                 findTask = await taskFindOne({_id: id, user: findUser._id.toString()},
-                    '_id title body completed completedAt');
+                    '_id completed');
                 if(
                     findTask === null
                 ){
