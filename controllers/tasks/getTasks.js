@@ -73,7 +73,8 @@ const getTasks = async (req, res) => {
         }else{
             response = {
                 status: 403,
-                message: 'unauthorized'
+                message: 'unauthorized',
+                tasks: null
             };
         }
     }
