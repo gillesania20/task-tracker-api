@@ -1,7 +1,9 @@
 const errorHandler = require('./../../middlewares/errorHandler');
 describe('MIDDLEWARE errorHandler', () => {
     test('error', () => {
-        const err = {};
+        const err = {
+            stack: 'errorStack'
+        };
         const req = {};
         const res = {
             status: jest.fn().mockReturnThis(),
