@@ -22,6 +22,10 @@ const taskDeleteOne = async (conditions) => {
     const query = await Task.deleteOne(conditions);
     return query;
 }
+const taskDeleteMany = async (filter) => {
+    const query = await Task.deleteMany(filter);
+    return query;
+}
 const taskUpdateOne = async (filter, update) => {
     const query = await Task.updateOne(filter, update);
     return query;
@@ -32,5 +36,6 @@ module.exports = {
     taskFindOneAndPopulate,
     taskCreate,
     taskDeleteOne,
+    taskDeleteMany,
     taskUpdateOne
 };

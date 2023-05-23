@@ -1,4 +1,5 @@
 const { userFindOne, userDeleteOne } = require('./../../models/users/userQueries');
+const { taskDeleteMany } = require('./../../models/tasks/taskQueries');
 const { validateId } = require('./../../functions/validation');
 const deleteUser = async (req, res) => {
     const id = req.params.id;
@@ -22,6 +23,7 @@ const deleteUser = async (req, res) => {
                 message: 'user not found'
             }
         }else{
+            await taskDeleteMany({user: id});
             await userDeleteOne({_id: id});
             response = {
                 status: 200,

@@ -1,7 +1,9 @@
 const deleteUser = require('./../../../controllers/users/deleteUser');
 const { userFindOne, userDeleteOne } = require('./../../../models/users/userQueries');
+const { taskDeleteMany } = require('./../../../models/tasks/taskQueries');
 const { validateId } = require('./../../../functions/validation');
 jest.mock('./../../../models/users/userQueries');
+jest.mock('./../../../models/tasks/taskQueries');
 jest.mock('./../../../functions/validation');
 describe('DELETE api/users/:userId', () => {
     afterEach(() => {
@@ -68,6 +70,7 @@ describe('DELETE api/users/:userId', () => {
         expect(userFindOne).toHaveBeenCalledWith({
             _id: 'id'
         }, STATIC_PROJECTION);
+        expect(taskDeleteMany).toHaveBeenCalledWith({ user: 'id'});
         expect(userDeleteOne).toHaveBeenCalledWith({ _id: 'id'});
     });
 });
