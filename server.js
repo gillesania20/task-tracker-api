@@ -10,12 +10,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const userRouter = require('./routes/userRouter');
 const taskRouter = require('./routes/taskRouter');
 const authRouter = require('./routes/authRouter');
-const corsOptions = {
-    origin: 'http://localhost:3000',
-    optionsSuccessStatus: 200,
-    methods: ['GET', 'POST', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}
+const corsOptions = require('./config/corsOptions');
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false}));
 app.use(express.json());
