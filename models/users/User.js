@@ -22,5 +22,6 @@ const UserSchema = new mongoose.Schema({
         updatedAt: 'updated_at'
     }
 });
+UserSchema.index({ username: 1 }, { unique: true });//to ensure unique value and prevent race condition
 const User = mongoose.model('User', UserSchema);
 module.exports = User;
