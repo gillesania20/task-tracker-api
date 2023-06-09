@@ -27,5 +27,6 @@ const TaskSchema = new mongoose.Schema({
         updatedAt: 'updated_at'
     }
 });
+TaskSchema.index({ title: 1, user: 1 }, { unique: true }); //unique compounded index
 const Task = mongoose.model('Task', TaskSchema);
 module.exports = Task;
