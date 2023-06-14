@@ -1,6 +1,11 @@
 const Task = require('./Task');
 const taskFind = async (filter, projection) => {
     const query = await Task.find(filter, projection)
+        .lean().exec();
+    return query;
+}
+const taskFindAndPopulate = async (filter, projection) => {
+    const query = await Task.find(filter, projection)
         .populate('user', 'username').lean().exec();
     return query;
 }
@@ -32,6 +37,7 @@ const taskUpdateOne = async (filter, update) => {
 }
 module.exports = {
     taskFind,
+    taskFindAndPopulate,
     taskFindOne,
     taskFindOneAndPopulate,
     taskCreate,

@@ -1,6 +1,6 @@
 const updateTask = require('./../../../controllers/tasks/updateTask');
 const { userFindOne } = require('./../../../models/users/userQueries');
-const { taskFindOne, taskUpdateOne } = require('./../../../models/tasks/taskQueries');
+const { taskFind, taskFindOne, taskUpdateOne } = require('./../../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const {
     validateId,
@@ -180,7 +180,7 @@ describe('PATCH api/tasks/:taskId', () => {
     test('role Admin then task not found', async () => {
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
         const STATIC_PROJECTION = '_id';
-        const STATIC_PROJECTION_2 = '_id completed';
+        const STATIC_PROJECTION_2 = '_id completed user';
         const req = {
             headers: {
                 authorization: 'Bearer bearerToken'
@@ -227,11 +227,11 @@ describe('PATCH api/tasks/:taskId', () => {
         expect(taskFindOne).toHaveBeenCalledWith({_id: 'id'},
             STATIC_PROJECTION_2);
     });
-    test('role Admin then task updated', async () => {
-        jest.useFakeTimers();
+    test('role Admin then title already taken', async () => {
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
         const STATIC_PROJECTION = '_id';
-        const STATIC_PROJECTION_2 = '_id completed';
+        const STATIC_PROJECTION_2 = '_id completed user';
+        const STATIC_PROJECTION_3 = '_id';
         const update = {
             title: 'title',
             body: 'body',
@@ -269,8 +269,78 @@ describe('PATCH api/tasks/:taskId', () => {
         });
         taskFindOne.mockResolvedValue({
             _id: 'task_id',
-            completed: false
+            completed: false,
+            user: 'user_id'
         });
+        taskFind.mockResolvedValue([
+            { _id: '_id_1'}
+        ])
+        await updateTask(req, res);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'title already taken'
+        });
+        expect(validateBearerToken).toHaveBeenCalledWith('Bearer bearerToken');
+        expect(validateId).toHaveBeenCalledWith('id');
+        expect(validateTaskTitle).toHaveBeenCalledWith('title');
+        expect(validateTaskBody).toHaveBeenCalledWith('body');
+        expect(validateTaskCompleted).toHaveBeenCalledWith(true);
+        expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
+        expect(userFindOne).toHaveBeenCalledWith({username: 'username'},
+            STATIC_PROJECTION);
+        expect(taskFindOne).toHaveBeenCalledWith({_id: 'id'},
+            STATIC_PROJECTION_2);
+        expect(taskFind).toHaveBeenCalledWith({
+            title: {$regex: /^title$/i},
+            user: 'user_id'}, STATIC_PROJECTION_3);
+    })
+    test('role Admin then task updated', async () => {
+        jest.useFakeTimers();
+        const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+        const STATIC_PROJECTION = '_id';
+        const STATIC_PROJECTION_2 = '_id completed user';
+        const STATIC_PROJECTION_3 = '_id';
+        const update = {
+            title: 'title',
+            body: 'body',
+            completed: true,
+            completedAt: Date.now()
+        };
+        const req = {
+            headers: {
+                authorization: 'Bearer bearerToken'
+            },
+            params: {
+                id: 'id'
+            },
+            body: {
+                title: 'title',
+                body: 'body',
+                completed: true
+            }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        validateBearerToken.mockReturnValue(true);
+        validateId.mockReturnValue(true);
+        validateTaskTitle.mockReturnValue(true);
+        validateTaskBody.mockReturnValue(true);
+        validateTaskCompleted.mockReturnValue(true);
+        jwt.verify.mockReturnValue({
+            username: 'username',
+            role: 'Admin'
+        });
+        userFindOne.mockResolvedValue({
+            _id: 'user_id'
+        });
+        taskFindOne.mockResolvedValue({
+            _id: 'task_id',
+            completed: false,
+            user: 'user_id'
+        });
+        taskFind.mockResolvedValue([])
         await updateTask(req, res);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -286,6 +356,9 @@ describe('PATCH api/tasks/:taskId', () => {
             STATIC_PROJECTION);
         expect(taskFindOne).toHaveBeenCalledWith({_id: 'id'},
             STATIC_PROJECTION_2);
+        expect(taskFind).toHaveBeenCalledWith({
+            title: {$regex: /^title$/i},
+            user: 'user_id'}, STATIC_PROJECTION_3);
         expect(taskUpdateOne).toHaveBeenCalledWith({_id: 'task_id'},
             update);
     });
@@ -293,7 +366,7 @@ describe('PATCH api/tasks/:taskId', () => {
         jest.useFakeTimers();
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
         const STATIC_PROJECTION = '_id';
-        const STATIC_PROJECTION_2 = '_id completed';
+        const STATIC_PROJECTION_2 = '_id completed user';
         const req = {
             headers: {
                 authorization: 'Bearer bearerToken'
@@ -340,11 +413,12 @@ describe('PATCH api/tasks/:taskId', () => {
         expect(taskFindOne).toHaveBeenCalledWith({_id: 'id', user: 'user_id'},
             STATIC_PROJECTION_2);
     });
-    test('role User then task updated', async () => {
+    test('role User then title already taken', async () => {
         jest.useFakeTimers();
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
         const STATIC_PROJECTION = '_id';
-        const STATIC_PROJECTION_2 = '_id completed';
+        const STATIC_PROJECTION_2 = '_id completed user';
+        const STATIC_PROJECTION_3 = '_id';
         const update = {
             title: 'title',
             body: 'body',
@@ -382,8 +456,78 @@ describe('PATCH api/tasks/:taskId', () => {
         });
         taskFindOne.mockResolvedValue({
             _id: 'task_id',
-            completed: false
+            completed: false,
+            user: 'user_id'
         });
+        taskFind.mockResolvedValue([
+            { _id: '_id_1'}
+        ]);
+        await updateTask(req, res);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'title already taken'
+        });
+        expect(validateBearerToken).toHaveBeenCalledWith('Bearer bearerToken');
+        expect(validateId).toHaveBeenCalledWith('id');
+        expect(validateTaskTitle).toHaveBeenCalledWith('title');
+        expect(validateTaskBody).toHaveBeenCalledWith('body');
+        expect(validateTaskCompleted).toHaveBeenCalledWith(true);
+        expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
+        expect(userFindOne).toHaveBeenCalledWith({username: 'username'},
+            STATIC_PROJECTION);
+        expect(taskFindOne).toHaveBeenCalledWith({_id: 'id', user: 'user_id'},
+            STATIC_PROJECTION_2);
+        expect(taskFind).toHaveBeenCalledWith(
+            {title: { $regex: /^title$/i }, user: 'user_id'},
+            STATIC_PROJECTION_3);
+    });
+    test('role User then task updated', async () => {
+        jest.useFakeTimers();
+        const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+        const STATIC_PROJECTION = '_id';
+        const STATIC_PROJECTION_2 = '_id completed user';
+        const STATIC_PROJECTION_3 = '_id';
+        const update = {
+            title: 'title',
+            body: 'body',
+            completed: true,
+            completedAt: Date.now()
+        };
+        const req = {
+            headers: {
+                authorization: 'Bearer bearerToken'
+            },
+            params: {
+                id: 'id'
+            },
+            body: {
+                title: 'title',
+                body: 'body',
+                completed: true
+            }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        validateBearerToken.mockReturnValue(true);
+        validateId.mockReturnValue(true);
+        validateTaskTitle.mockReturnValue(true);
+        validateTaskBody.mockReturnValue(true);
+        validateTaskCompleted.mockReturnValue(true);
+        jwt.verify.mockReturnValue({
+            username: 'username',
+            role: 'User'
+        });
+        userFindOne.mockResolvedValue({
+            _id: 'user_id'
+        });
+        taskFindOne.mockResolvedValue({
+            _id: 'task_id',
+            completed: false,
+            user: 'user_id'
+        });
+        taskFind.mockResolvedValue([]);
         await updateTask(req, res);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -399,6 +543,9 @@ describe('PATCH api/tasks/:taskId', () => {
             STATIC_PROJECTION);
         expect(taskFindOne).toHaveBeenCalledWith({_id: 'id', user: 'user_id'},
             STATIC_PROJECTION_2);
+        expect(taskFind).toHaveBeenCalledWith(
+            {title: { $regex: /^title$/i }, user: 'user_id'},
+            STATIC_PROJECTION_3);
         expect(taskUpdateOne).toHaveBeenCalledWith({_id: 'task_id'}, update);
     });
 });

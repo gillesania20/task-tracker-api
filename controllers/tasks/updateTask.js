@@ -1,5 +1,5 @@
 const { userFindOne } = require('./../../models/users/userQueries');
-const { taskFindOne, taskUpdateOne } = require('./../../models/tasks/taskQueries');
+const { taskFind, taskFindOne, taskUpdateOne } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const {
     validateId,
@@ -21,6 +21,9 @@ const updateTask = async (req, res) => {
     const validatedCompleted = validateTaskCompleted(completed);
     let findUser = null;
     let findTask = null;
+    let findTasksWithSimilarTitle = null;
+    let pattern = '';
+    let regex = null;
     let accessToken = '';
     let decoded = null;
     let update = null;
@@ -74,41 +77,16 @@ const updateTask = async (req, res) => {
         }else{
             if(
                 decoded.role === 'Admin'
+                || decoded.role === 'User'
             ){
-                findTask = await taskFindOne({_id: id},
-                    '_id completed');
-                if(
-                    findTask === null
-                ){
-                    response = {
-                        status: 404,
-                        message: 'task not found'
-                    };
-                }else{
-                    update = {};
-                    if(typeof title !== 'undefined'){
-                        update.title = title;
-                    }
-                    if(typeof body !== 'undefined'){
-                        update.body = body;
-                    }
-                    if(typeof completed !== 'undefined'){
-                        update.completed = completed;
-                        if(findTask.completed === false && completed === true){
-                            update.completedAt = Date.now();
-                        }
-                    }
-                    await taskUpdateOne({ _id: findTask._id.toString()}, update);
-                    response = {
-                        status: 200,
-                        message: 'task updated'
-                    };
+                if(decoded.role === 'Admin'){
+                    findTask = await taskFindOne({_id: id},
+                        '_id completed user');
+                }else if(decoded.role === 'User'){
+                    findTask = await taskFindOne(
+                        {_id: id, user: findUser._id.toString()},
+                        '_id completed user');
                 }
-            }else if(
-                decoded.role === 'User'
-            ){
-                findTask = await taskFindOne({_id: id, user: findUser._id.toString()},
-                    '_id completed');
                 if(
                     findTask === null
                 ){
@@ -117,24 +95,37 @@ const updateTask = async (req, res) => {
                         message: 'task not found'
                     };
                 }else{
-                    update = {};
-                    if(typeof title !== 'undefined'){
-                        update.title = title;
-                    }
-                    if(typeof body !== 'undefined'){
-                        update.body = body;
-                    }
-                    if(typeof completed !== 'undefined'){
-                        update.completed = completed;
-                        if(findTask.completed === false && completed === true){
-                            update.completedAt = Date.now();
+                    pattern = `^${title}\$`;
+                    regex = new RegExp(pattern, "i");
+                    findTasksWithSimilarTitle = await taskFind({
+                        title: {$regex: regex},
+                        user: findTask.user.toString()
+                    }, '_id');
+                    if(findTasksWithSimilarTitle.length !== 0){
+                        response = {
+                            status: 400,
+                            message: 'title already taken'
+                        };
+                    }else{
+                        update = {};
+                        if(typeof title !== 'undefined'){
+                            update.title = title;
                         }
+                        if(typeof body !== 'undefined'){
+                            update.body = body;
+                        }
+                        if(typeof completed !== 'undefined'){
+                            update.completed = completed;
+                            if(findTask.completed === false && completed === true){
+                                update.completedAt = Date.now();
+                            }
+                        }
+                        await taskUpdateOne({ _id: findTask._id.toString()}, update);
+                        response = {
+                            status: 200,
+                            message: 'task updated'
+                        };
                     }
-                    await taskUpdateOne({ _id: findTask._id.toString()}, update);
-                    response = {
-                        status: 200,
-                        message: 'task updated'
-                    };
                 }
             }else{
                 response = {

@@ -1,6 +1,6 @@
 const getTasks = require('./../../../controllers/tasks/getTasks');
 const { userFindOne } = require('./../../../models/users/userQueries');
-const { taskFind } = require('./../../../models/tasks/taskQueries');
+const { taskFindAndPopulate } = require('./../../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const { validateBearerToken } = require('./../../../functions/validation');
 jest.mock('./../../../models/users/userQueries');
@@ -26,7 +26,7 @@ describe('GET api/tasks', () => {
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({
             message: 'invalid bearer token',
-            tasks: null
+            tasks: []
         });
         expect(validateBearerToken).toHaveBeenCalledWith('bearerToken');
     });
@@ -52,7 +52,7 @@ describe('GET api/tasks', () => {
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({
             message: 'user not found',
-            tasks: null
+            tasks: []
         });
         expect(validateBearerToken).toHaveBeenCalledWith('bearer bearerToken');
         expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
@@ -80,7 +80,7 @@ describe('GET api/tasks', () => {
         userFindOne.mockResolvedValue({
             _id: 'user_id'
         });
-        taskFind.mockResolvedValue([]);
+        taskFindAndPopulate.mockResolvedValue([]);
         await getTasks(req, res);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -91,7 +91,7 @@ describe('GET api/tasks', () => {
         expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
         expect(userFindOne).toHaveBeenCalledWith({username: 'username'},
             STATIC_PROJECTION);
-        expect(taskFind).toHaveBeenCalledWith({}, STATIC_PROJECTION_2);
+        expect(taskFindAndPopulate).toHaveBeenCalledWith({}, STATIC_PROJECTION_2);
     });
     test('role Admin then display task', async () => {
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
@@ -114,7 +114,7 @@ describe('GET api/tasks', () => {
         userFindOne.mockResolvedValue({
             _id: 'user_id'
         });
-        taskFind.mockResolvedValue([{
+        taskFindAndPopulate.mockResolvedValue([{
             _id: 'task_id',
             title: 'title',
             body: 'body',
@@ -137,7 +137,7 @@ describe('GET api/tasks', () => {
         expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
         expect(userFindOne).toHaveBeenCalledWith({username: 'username'},
             STATIC_PROJECTION);
-        expect(taskFind).toHaveBeenCalledWith({}, STATIC_PROJECTION_2);
+        expect(taskFindAndPopulate).toHaveBeenCalledWith({}, STATIC_PROJECTION_2);
     });
     test('role User then no tasks yet', async () => {
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
@@ -160,7 +160,7 @@ describe('GET api/tasks', () => {
         userFindOne.mockResolvedValue({
             _id: 'user_id'
         });
-        taskFind.mockResolvedValue([]);
+        taskFindAndPopulate.mockResolvedValue([]);
         await getTasks(req, res);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -171,7 +171,7 @@ describe('GET api/tasks', () => {
         expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
         expect(userFindOne).toHaveBeenCalledWith({username: 'username'},
             STATIC_PROJECTION);
-        expect(taskFind).toHaveBeenCalledWith({user: 'user_id'}, STATIC_PROJECTION_2);
+        expect(taskFindAndPopulate).toHaveBeenCalledWith({user: 'user_id'}, STATIC_PROJECTION_2);
     });
     test('role User then display tasks', async () => {
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
@@ -194,7 +194,7 @@ describe('GET api/tasks', () => {
         userFindOne.mockResolvedValue({
             _id: 'user_id'
         });
-        taskFind.mockResolvedValue([
+        taskFindAndPopulate.mockResolvedValue([
             {
                 _id: 'task_id',
                 title: 'title',
@@ -229,7 +229,7 @@ describe('GET api/tasks', () => {
         expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);
         expect(userFindOne).toHaveBeenCalledWith({username: 'username'},
             STATIC_PROJECTION);
-        expect(taskFind).toHaveBeenCalledWith({user: 'user_id'}, STATIC_PROJECTION_2);
+        expect(taskFindAndPopulate).toHaveBeenCalledWith({user: 'user_id'}, STATIC_PROJECTION_2);
     });
     test('unauthorized', async () => {
         const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
@@ -255,7 +255,7 @@ describe('GET api/tasks', () => {
         expect(res.status).toHaveBeenCalledWith(403);
         expect(res.json).toHaveBeenCalledWith({
             message: 'unauthorized',
-            tasks: null
+            tasks: []
         });
         expect(validateBearerToken).toHaveBeenCalledWith('bearer bearerToken');
         expect(jwt.verify).toHaveBeenCalledWith('bearerToken', ACCESS_TOKEN);

@@ -1,5 +1,5 @@
 const { userFindOne } = require('./../../models/users/userQueries');
-const { taskFind } = require('./../../models/tasks/taskQueries');
+const { taskFindAndPopulate } = require('./../../models/tasks/taskQueries');
 const jwt = require('jsonwebtoken');
 const { validateBearerToken } = require('./../../functions/validation');
 const getTasks = async (req, res) => {
@@ -16,7 +16,7 @@ const getTasks = async (req, res) => {
         response = {
             status: 400,
             message: 'invalid bearer token',
-            tasks: null
+            tasks: []
         };
     }else{
         accessToken = bearerToken.split(' ')[1];
@@ -28,13 +28,20 @@ const getTasks = async (req, res) => {
             response = {
                 status: 404,
                 message: 'user not found',
-                tasks: null
+                tasks: []
             };
         }else if(
             decoded.role === 'Admin'
+            || decoded.role === 'User'
         ){
-            findTasks = await taskFind({}
-                ,'_id title body completed completedAt');
+            if(decoded.role === 'Admin'){
+                findTasks = await taskFindAndPopulate({}
+                    ,'_id title body completed completedAt');
+            }else if(decoded.role === 'User'){
+                findTasks = await taskFindAndPopulate(
+                    {user: findUser._id.toString()}
+                    ,'_id title body completed completedAt');
+            }
             if(
                 findTasks.length <= 0
             ){
@@ -50,31 +57,11 @@ const getTasks = async (req, res) => {
                     tasks: findTasks
                 };
             }
-        }else if(
-            decoded.role === 'User'
-        ){
-            findTasks = await taskFind({user: findUser._id}
-                ,'_id title body completed completedAt');
-            if(
-                findTasks.length <= 0
-            ){
-                response = {
-                    status: 200,
-                    message: 'no tasks yet',
-                    tasks: []
-                };
-            }else{
-                response = {
-                    status: 200,
-                    message: 'display tasks',
-                    tasks: findTasks
-                };
-            }
         }else{
             response = {
                 status: 403,
                 message: 'unauthorized',
-                tasks: null
+                tasks: []
             };
         }
     }
