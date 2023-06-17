@@ -63,8 +63,9 @@ const getTask = async (req, res) => {
         }else if(
             decoded.role === 'User'
         ){
-            findTask = await taskFindOneAndPopulate({_id: id, user: findUser._id},
-                    '-_id title body completed completedAt');
+            findTask = await taskFindOneAndPopulate(
+                {_id: id, user: findUser._id.toString()},
+                '-_id title body completed completedAt');
             if(
                 findTask === null
             ){

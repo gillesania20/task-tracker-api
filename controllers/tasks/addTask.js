@@ -57,7 +57,7 @@ const addTask = async (req, res) => {
             findTask = await taskFindOne(
                 {
                     title: {$regex: regex},
-                    user: findUser._id
+                    user: findUser._id.toString()
                 },
                 '_id'
             );
@@ -72,7 +72,7 @@ const addTask = async (req, res) => {
                 await taskCreate({
                     title,
                     body,
-                    user: findUser._id
+                    user: findUser._id.toString()
                 });
                 response = {
                     status: 201,

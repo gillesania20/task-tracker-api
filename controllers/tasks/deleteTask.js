@@ -49,7 +49,7 @@ const deleteTask = async (req, res) => {
                     message: 'task not found'
                 };
             }else{
-                await taskDeleteOne({_id: findTask._id});
+                await taskDeleteOne({_id: findTask._id.toString()});
                 response = {
                     status: 200,
                     message: 'task deleted'
@@ -58,7 +58,7 @@ const deleteTask = async (req, res) => {
         }else if(
             decoded.role === 'User'
         ){
-            findTask = await taskFindOne({_id: id, user: findUser._id}, '_id');
+            findTask = await taskFindOne({_id: id, user: findUser._id.toString()}, '_id');
             if(
                 findTask === null
             ){
@@ -67,7 +67,7 @@ const deleteTask = async (req, res) => {
                     message: 'task not found'
                 };
             }else{
-                await taskDeleteOne({_id: findTask._id});
+                await taskDeleteOne({_id: findTask._id.toString()});
                 response = {
                     status: 200,
                     message: 'task deleted'
