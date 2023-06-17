@@ -42,30 +42,16 @@ const getTask = async (req, res) => {
             };
         }else if(
             decoded.role === 'Admin'
+            || decoded.role === 'User'
         ){
-            findTask = await taskFindOneAndPopulate({_id: id},
-                '-_id title body completed completedAt');
-            if(
-                findTask === null
-            ){
-                response = {
-                    status: 404,
-                    message: 'task not found',
-                    task: null
-                };
-            }else{
-                response = {
-                    status: 200,
-                    message: 'display task',
-                    task: findTask
-                };
+            if(decoded.role === 'Admin'){
+                findTask = await taskFindOneAndPopulate({_id: id},
+                    '-_id title body completed completedAt');
+            }else if(decoded.role === 'User'){
+                findTask = await taskFindOneAndPopulate(
+                    {_id: id, user: findUser._id.toString()},
+                    '-_id title body completed completedAt');
             }
-        }else if(
-            decoded.role === 'User'
-        ){
-            findTask = await taskFindOneAndPopulate(
-                {_id: id, user: findUser._id.toString()},
-                '-_id title body completed completedAt');
             if(
                 findTask === null
             ){
