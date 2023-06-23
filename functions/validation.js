@@ -5,9 +5,11 @@ const validateId = (id) => {
     const validatedId = regexId.test(id);
     const validateObjectId = mongoose.isValidObjectId(id);
     let output = false;
-    if(
-        typeof id !== 'string'
-        || id.length <= 0
+    if(typeof id !== 'string'){
+        output = false;
+    }else if(
+        typeof id === 'string'
+        && id.length <= 0
     ){
         output = false;
     }else if(
@@ -29,9 +31,11 @@ const validateUsername = (username) => {
     //letters, numbers and underscore
     const validatedUsername = regexUsername.test(username);
     let output = false;
-    if(
-        typeof username !=='string'
-        || username.length <= 0
+    if(typeof username !== 'string'){
+        output = false;
+    }else if(
+        typeof username === 'string'
+        && username.length <= 0
     ){
         output = false;
     }else if(
@@ -49,9 +53,11 @@ const validatePassword = (password) => {
     //atleast one letter,number, and special character then minimum length is 8
     const validatedPassword = regexPassword.test(password);
     let output = false;
-    if(
-        typeof password !== 'string'
-        || password.length <= 0
+    if(typeof password !== 'string'){
+        output = false;
+    }else if(
+        typeof password === 'string'
+        && password.length <= 0
     ){
         output = false;
     }else if(
@@ -69,17 +75,16 @@ const validateBearerToken = (bearerToken) => {
     //Starts with 'Bearer ' plus any characters
     const validatedBearerToken = regexBearerToken.test(bearerToken);
     let output = false;
-    if(
-        typeof bearerToken !== 'string'
-        || bearerToken.length <= 0
+    if(typeof bearerToken === 'string'
+        && validatedBearerToken === true
     ){
-        output = false;
-    }else if(
-        validatedBearerToken === false
-    ){
-        output = false;
+        if(bearerToken.split(' ')[1] === 'null'){
+            output = false;
+        }else{
+            output = true;
+        }
     }else{
-        output = true;
+        output = false;
     }
     return output;
 }
@@ -89,12 +94,18 @@ const validateTaskTitle = (title) => {
     //one or more letters or numbers separated with space 
     const validatedRegexTitle = regexTitle.test(title);
     let output = false;
-    if(
-        typeof title !== 'string'
-        || title.length <= 0
-        || title.length > 20
+    if(typeof title !== 'string'){
+        output = false;
+    }else if(
+        typeof title === 'string'
+        && title.length <= 0
     ){
         output =  false;
+    }else if(
+        typeof title === 'string'
+        && title.length > 20
+    ){
+        output = false;
     }else if(
         validatedRegexTitle === false
     ){
@@ -110,10 +121,16 @@ const validateTaskBody = (body) => {
     //one or more characters separated with space
     const validatedRegexBody = regexBody.test(body);
     let output = false;
-    if(
-        typeof body !== 'string'
-        || body.length <= 0
-        || body.length > 255
+    if(typeof body !== 'string'){
+        output = false;
+    }else if(
+        typeof body === 'string'
+        && body.length <= 0
+    ){
+        output = false;
+    }else if(
+        typeof body === 'string'
+        && body.length > 255
     ){
         output = false;
     }else if(

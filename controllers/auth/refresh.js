@@ -10,14 +10,28 @@ const refresh = async (req, res) => {
     if(
         refreshToken === undefined
     ){
-        response = {status: 404, message: 'no refresh token', accessToken: null}
+        response = {
+            status: 404,
+            message: 'no refresh token',
+            accessToken: null,
+            userId: null
+        }
     }else{
-        decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
-        findUser = await userFindOne({username: decoded.username}, 'username role');
+        decoded = jwt.verify(
+            refreshToken, process.env.REFRESH_TOKEN
+        );
+        findUser = await userFindOne(
+            {username: decoded.username}, '_id username role'
+        );
         if(
             findUser === null
         ){
-            response = {status: 404, message: 'user not found', accessToken: null}
+            response = {
+                status: 404,
+                message: 'user not found',
+                accessToken: null,
+                userId: null
+            }
         }else{
             accessToken = jwt.sign(
                 {
@@ -29,9 +43,20 @@ const refresh = async (req, res) => {
                     expiresIn: ACCESS_TOKEN_EXPIRES_IN
                 }
             );
-            response = {status: 200, message: 'successful token refresh', accessToken};
+            response = {
+                status: 200,
+                message: 'successful token refresh',
+                accessToken,
+                userId: findUser._id.toString()
+            };
         }
     }
-    return res.status(response.status).json({message: response.message, accessToken: response.accessToken});
+    return res
+        .status(response.status)
+        .json({
+            message: response.message,
+            accessToken: response.accessToken,
+            userId: response.userId
+    });
 }
 module.exports = refresh;
