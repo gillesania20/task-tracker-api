@@ -95,7 +95,7 @@ describe('PATCH api/tasks/:taskId', () => {
         await updateTask(req, res);
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({
-            message: 'invalid task title'
+            message: 'invalid task title. maximum 20 characters. letters, numbers, and space only.'
         });
         expect(validateBearerToken).toHaveBeenCalledWith('bearerToken');
         expect(validateId).toHaveBeenCalledWith('id');
@@ -126,7 +126,7 @@ describe('PATCH api/tasks/:taskId', () => {
         await updateTask(req, res);
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({
-            message: 'invalid task body'
+            message: 'invalid task body. maximum 255 characters. any characters.'
         });
         expect(validateBearerToken).toHaveBeenCalledWith('bearerToken');
         expect(validateId).toHaveBeenCalledWith('id');

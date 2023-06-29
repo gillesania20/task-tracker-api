@@ -47,14 +47,14 @@ const updateTask = async (req, res) => {
     ){
         response = {
             status: 400,
-            message: 'invalid task title'
+            message: 'invalid task title. maximum 20 characters. letters, numbers, and space only.'
         };
     }else if(
         typeof body !== 'undefined' && validatedBody === false
     ){
         response = {
             status: 400,
-            message: 'invalid task body'
+            message: 'invalid task body. maximum 255 characters. any characters.'
         };
     }else if(
         typeof completed !== 'undefined' && validatedCompleted === false
