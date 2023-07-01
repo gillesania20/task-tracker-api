@@ -2,7 +2,7 @@ const ACCESS_TOKEN_EXPIRES_IN = (process.env.NODE_ENV === 'production')?'5s':'1h
 const REFRESH_TOKEN_EXPIRES_IN = '1d';
 const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24;
 const COOKIE_HTTP_ONLY = true;
-const COOKIE_SAME_SITE = (process.env.NODE_ENV === 'production')?'none':false;
+const COOKIE_SAME_SITE = (process.env.NODE_ENV === 'production')?'None':false;
 //sameSite: false === for development
 //sameSite: 'none' === for production
 const COOKIE_SECURE = (process.env.NODE_ENV === 'production')?true:false;
