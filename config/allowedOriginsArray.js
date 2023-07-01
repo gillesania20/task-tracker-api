@@ -1,4 +1,4 @@
 const allowedOriginsArray = [
-    'http://localhost:3000'
+    'https://task-tracker-9mss.onrender.com/'
 ];
 module.exports = allowedOriginsArray;
